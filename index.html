@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DevPath — Full Stack Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #060810;
+  --surface: #0c1018;
+  --surface2: #111827;
+  --border: #1a2236;
+  --border2: #243047;
+  --text: #e2eaf8;
+  --muted: #4a607a;
+  --muted2: #2a3a50;
+  --m1: #f72585;
+  --m2: #4cc9f0;
+  --m3: #7bf1a8;
+  --m4: #ffd166;
+  --green: #7bf1a8;
+  --red: #f72585;
+  --accent: #4cc9f0;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'JetBrains Mono',monospace;
+  font-size:13px;
+  min-height:100vh;
+}
+
+/* ── LAYOUT ── */
+.app{display:flex;flex-direction:column;min-height:100vh;}
+.topbar{
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  padding:0 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:16px;flex-wrap:wrap;
+  position:sticky;top:0;z-index:100;
+}
+.logo{
+  font-family:'Syne',sans-serif;
+  font-weight:800;font-size:18px;
+  padding:14px 0;
+  background:linear-gradient(135deg,var(--m1),var(--m2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.nav{display:flex;gap:0;}
+.nav-btn{
+  padding:14px 14px;
+  background:transparent;border:none;
+  border-bottom:2px solid transparent;
+  color:var(--muted);cursor:pointer;
+  font-family:inherit;font-size:11px;letter-spacing:1px;
+  transition:all .15s;white-space:nowrap;
+}
+.nav-btn.active{color:var(--text);border-bottom-color:var(--accent);}
+.nav-btn:hover{color:var(--text);}
+.streak-badge{
+  display:flex;align-items:center;gap:6px;
+  background:var(--surface2);
+  border:1px solid var(--border2);
+  border-radius:20px;padding:6px 14px;
+  font-size:11px;color:var(--muted);
+}
+.streak-num{font-weight:700;color:var(--m4);font-size:14px;}
+
+/* ── PAGES ── */
+.page{display:none;padding:24px 20px;max-width:1100px;margin:0 auto;width:100%;}
+.page.active{display:block;}
+
+/* ── DASHBOARD ── */
+.dash-hero{
+  background:linear-gradient(135deg,#0c1018 0%,#111827 100%);
+  border:1px solid var(--border);
+  border-radius:12px;padding:28px;
+  margin-bottom:20px;
+  position:relative;overflow:hidden;
+}
+.dash-hero::before{
+  content:'';position:absolute;top:-60px;right:-60px;
+  width:200px;height:200px;
+  background:radial-gradient(circle,rgba(76,201,240,.06) 0%,transparent 70%);
+}
+.dash-title{font-family:'Syne',sans-serif;font-size:clamp(18px,3vw,28px);font-weight:800;margin-bottom:6px;}
+.dash-sub{color:var(--muted);font-size:12px;margin-bottom:20px;}
+.hero-stats{display:flex;gap:20px;flex-wrap:wrap;}
+.hstat{
+  background:#070a10;border:1px solid var(--border);border-radius:8px;
+  padding:14px 18px;min-width:110px;
+}
+.hstat-n{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--accent);}
+.hstat-l{font-size:10px;color:var(--muted);margin-top:2px;letter-spacing:1px;}
+
+.section-title{
+  font-size:10px;letter-spacing:3px;color:var(--muted);
+  margin-bottom:14px;margin-top:24px;
+}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.grid3{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;}
+.grid4{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
+
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;}
+.card-sm{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;}
+
+/* Month progress bars */
+.month-bar{margin-bottom:14px;}
+.month-bar-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.month-name{font-size:12px;font-weight:700;}
+.month-pct{font-size:11px;color:var(--muted);}
+.bar-track{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:3px;transition:width .6s ease;}
+
+/* Big progress ring */
+.ring-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
+.ring-svg{transform:rotate(-90deg);}
+.ring-text{text-align:center;margin-top:12px;}
+.ring-pct{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--green);}
+.ring-sub{font-size:10px;color:var(--muted);letter-spacing:2px;margin-top:2px;}
+
+/* Heatmap */
+.heatmap{display:flex;flex-wrap:wrap;gap:3px;margin-top:8px;}
+.hm-cell{
+  width:14px;height:14px;border-radius:2px;
+  background:var(--surface2);cursor:pointer;transition:.15s;
+  position:relative;
+}
+.hm-cell:hover{transform:scale(1.3);}
+.hm-cell.done{background:var(--green);}
+.hm-cell.today{background:var(--accent);box-shadow:0 0 6px var(--accent);}
+.hm-cell.future{background:var(--surface2);opacity:.4;}
+.hm-cell.skipped{background:var(--red);opacity:.6;}
+.hm-months{display:flex;gap:3px;margin-bottom:4px;}
+.hm-month-label{font-size:9px;color:var(--muted);letter-spacing:1px;}
+
+/* ── TODAY PAGE ── */
+.today-header{
+  border-left:3px solid var(--accent);
+  background:var(--surface);
+  border-radius:0 8px 8px 0;
+  padding:16px 20px;margin-bottom:20px;
+}
+.today-day{font-size:10px;color:var(--accent);letter-spacing:3px;margin-bottom:4px;}
+.today-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;}
+.today-week{font-size:11px;color:var(--muted);margin-top:3px;}
+
+.schedule-block{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;overflow:hidden;margin-bottom:10px;
+}
+.sb-header{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;cursor:pointer;
+  transition:background .15s;
+}
+.sb-header:hover{background:var(--surface2);}
+.sb-time{
+  font-size:10px;color:var(--muted);
+  background:var(--surface2);
+  padding:3px 8px;border-radius:3px;
+  white-space:nowrap;
+}
+.sb-icon{font-size:16px;}
+.sb-title{flex:1;font-weight:700;font-size:13px;}
+.sb-dur{font-size:10px;color:var(--muted);}
+.sb-body{padding:0 16px;max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s;}
+.sb-body.open{max-height:600px;padding:0 16px 16px;}
+
+.topic-list{list-style:none;margin-top:10px;}
+.topic-list li{
+  display:flex;gap:8px;padding:6px 0;
+  border-bottom:1px solid var(--border);font-size:12px;color:#b0bfcc;
+}
+.topic-list li:last-child{border:none;}
+.topic-list li::before{content:'▸';color:var(--accent);flex-shrink:0;}
+.topic-new::before{content:'★' !important;color:var(--m4) !important;}
+
+.check-task{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 10px;border-radius:6px;
+  cursor:pointer;transition:background .15s;margin-bottom:4px;
+}
+.check-task:hover{background:var(--surface2);}
+.check-box{
+  width:18px;height:18px;border-radius:4px;flex-shrink:0;
+  border:2px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;transition:.15s;
+}
+.check-box.done{background:var(--green);border-color:var(--green);color:#000;}
+.check-label{font-size:12px;color:var(--muted);}
+.check-label.done{text-decoration:line-through;color:var(--muted2);}
+
+/* Notes area */
+.notes-area{
+  width:100%;background:var(--surface2);
+  border:1px solid var(--border2);border-radius:6px;
+  color:var(--text);font-family:inherit;font-size:12px;
+  padding:12px;resize:vertical;min-height:100px;
+  outline:none;transition:border .15s;
+}
+.notes-area:focus{border-color:var(--accent);}
+
+/* Mood tracker */
+.mood-row{display:flex;gap:8px;flex-wrap:wrap;}
+.mood-btn{
+  padding:6px 14px;background:var(--surface2);
+  border:1px solid var(--border2);border-radius:20px;
+  color:var(--muted);cursor:pointer;font-family:inherit;font-size:12px;
+  transition:.15s;
+}
+.mood-btn:hover,.mood-btn.selected{border-color:var(--accent);color:var(--text);}
+
+/* Timer */
+.timer-display{
+  font-family:'Syne',sans-serif;
+  font-size:42px;font-weight:800;
+  color:var(--accent);letter-spacing:2px;
+  text-align:center;margin:16px 0;
+}
+.timer-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.btn{
+  padding:8px 20px;border-radius:6px;
+  cursor:pointer;font-family:inherit;font-size:12px;
+  border:1px solid;transition:.15s;letter-spacing:1px;
+}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#000;font-weight:700;}
+.btn-primary:hover{opacity:.85;}
+.btn-outline{background:transparent;border-color:var(--border2);color:var(--muted);}
+.btn-outline:hover{border-color:var(--accent);color:var(--text);}
+.btn-danger{background:transparent;border-color:var(--red);color:var(--red);}
+.btn-danger:hover{background:var(--red);color:#fff;}
+
+/* ── CALENDAR PAGE ── */
+.cal-grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:6px;
+  margin-top:12px;
+}
+.cal-header-cell{
+  text-align:center;font-size:9px;
+  color:var(--muted);letter-spacing:1px;padding:6px 0;
+}
+.cal-cell{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:6px;padding:8px 6px;
+  min-height:72px;cursor:pointer;
+  transition:.15s;position:relative;overflow:hidden;
+}
+.cal-cell:hover{border-color:var(--accent);}
+.cal-cell.today-cell{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);}
+.cal-cell.done-cell{border-color:var(--green);}
+.cal-cell.skip-cell{border-color:var(--red);opacity:.6;}
+.cal-cell.future-cell{opacity:.4;}
+.cal-cell.empty{background:transparent;border-color:transparent;cursor:default;}
+.cal-date{font-size:10px;color:var(--muted);margin-bottom:4px;}
+.cal-day-num{font-size:9px;color:var(--accent);margin-bottom:2px;}
+.cal-topic{font-size:9px;color:var(--muted2);line-height:1.4;overflow:hidden;max-height:32px;}
+.cal-dot{
+  position:absolute;bottom:5px;right:5px;
+  width:6px;height:6px;border-radius:50%;
+}
+
+/* ── REPORT PAGE ── */
+.stat-big{
+  font-family:'Syne',sans-serif;font-size:36px;font-weight:800;
+}
+.chart-bar-h{
+  display:flex;gap:8px;align-items:center;margin-bottom:8px;
+}
+.chart-bar-label{width:80px;font-size:11px;color:var(--muted);text-align:right;flex-shrink:0;}
+.chart-bar-track{flex:1;height:22px;background:var(--surface2);border-radius:3px;overflow:hidden;}
+.chart-bar-fill{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:8px;font-size:10px;font-weight:700;transition:width .8s ease;}
+
+/* ── ALL DAYS PAGE ── */
+.day-row{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:6px;padding:12px 16px;margin-bottom:6px;
+  display:flex;gap:12px;align-items:center;cursor:pointer;
+  transition:.15s;
+}
+.day-row:hover{border-color:var(--border2);}
+.day-row.done{border-color:#1a3020;}
+.day-row.today-row{border-color:var(--accent);}
+.day-num-badge{
+  width:36px;height:36px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;flex-shrink:0;
+}
+.day-info{flex:1;min-width:0;}
+.day-title{font-size:13px;font-weight:700;margin-bottom:2px;}
+.day-sub{font-size:10px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.day-tag{
+  font-size:9px;padding:2px 8px;border-radius:3px;
+  letter-spacing:1px;flex-shrink:0;
+}
+
+/* Modal */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(6,8,16,.85);
+  z-index:1000;display:none;align-items:center;justify-content:center;
+  padding:20px;
+}
+.modal-overlay.open{display:flex;}
+.modal{
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:12px;padding:24px;max-width:600px;width:100%;
+  max-height:90vh;overflow-y:auto;
+}
+.modal-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:4px;}
+.modal-close{
+  float:right;background:transparent;border:none;
+  color:var(--muted);font-size:18px;cursor:pointer;padding:0 4px;
+}
+.tag{
+  display:inline-block;font-size:9px;padding:2px 8px;
+  border-radius:3px;letter-spacing:1px;margin-right:4px;
+}
+
+/* Misc */
+.divider{height:1px;background:var(--border);margin:16px 0;}
+.badge-new{background:#ffd16615;color:var(--m4);}
+.badge-done{background:#7bf1a815;color:var(--green);}
+.badge-today{background:#4cc9f015;color:var(--accent);}
+.badge-skip{background:#f7258515;color:var(--red);}
+.badge-m1{background:#f7258515;color:var(--m1);}
+.badge-m2{background:#4cc9f015;color:var(--m2);}
+.badge-m3{background:#7bf1a815;color:var(--m3);}
+.badge-m4{background:#ffd16615;color:var(--m4);}
+
+input[type=range]{width:100%;accent-color:var(--accent);}
+.save-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 18px;background:var(--green);
+  border:none;border-radius:6px;color:#000;
+  cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;
+  transition:.15s;margin-top:12px;
+}
+.save-btn:hover{opacity:.85;}
+
+.pill{
+  display:inline-block;padding:3px 10px;border-radius:20px;
+  font-size:10px;border:1px solid;margin:2px;
+}
+
+/* Toaster */
+#toast{
+  position:fixed;bottom:24px;right:24px;
+  background:var(--green);color:#000;
+  padding:10px 20px;border-radius:8px;font-weight:700;font-size:12px;
+  transform:translateY(100px);opacity:0;
+  transition:.3s;z-index:2000;
+}
+#toast.show{transform:translateY(0);opacity:1;}
+
+@media(max-width:640px){
+  .grid2{grid-template-columns:1fr;}
+  .cal-grid{grid-template-columns:repeat(7,1fr);gap:3px;}
+  .cal-cell{min-height:50px;padding:4px 3px;}
+  .hero-stats{gap:10px;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">DevPath</div>
+  <nav class="nav">
+    <button class="nav-btn active" onclick="showPage('dashboard',this)">Dashboard</button>
+    <button class="nav-btn" onclick="showPage('today',this)">Today</button>
+    <button class="nav-btn" onclick="showPage('calendar',this)">Calendar</button>
+    <button class="nav-btn" onclick="showPage('alldays',this)">All Days</button>
+    <button class="nav-btn" onclick="showPage('report',this)">Report</button>
+  </nav>
+  <div class="streak-badge">🔥 <span class="streak-num" id="streak-count">0</span> day streak</div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="dash-hero">
+    <div class="dash-title">Full Stack Python Developer</div>
+    <div class="dash-sub">4-Month Roadmap · Start: 11 May 2026 · 5 hrs/day · React + FastAPI + PostgreSQL + Docker</div>
+    <div class="hero-stats">
+      <div class="hstat"><div class="hstat-n" id="h-days-done">0</div><div class="hstat-l">DAYS DONE</div></div>
+      <div class="hstat"><div class="hstat-n" id="h-days-left">120</div><div class="hstat-l">DAYS LEFT</div></div>
+      <div class="hstat"><div class="hstat-n" id="h-hrs">0</div><div class="hstat-l">HOURS LOGGED</div></div>
+      <div class="hstat"><div class="hstat-n" id="h-tasks">0</div><div class="hstat-l">TASKS DONE</div></div>
+      <div class="hstat"><div class="hstat-n" id="h-streak">0</div><div class="hstat-l">STREAK</div></div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <!-- Progress ring -->
+    <div class="card" style="display:flex;flex-direction:column;">
+      <div class="section-title" style="margin-top:0;">OVERALL PROGRESS</div>
+      <div class="ring-wrap">
+        <svg class="ring-svg" width="140" height="140" viewBox="0 0 140 140">
+          <circle cx="70" cy="70" r="58" fill="none" stroke="#1a2236" stroke-width="10"/>
+          <circle cx="70" cy="70" r="58" fill="none" stroke="url(#ringGrad)" stroke-width="10"
+            stroke-dasharray="364" stroke-dashoffset="364"
+            stroke-linecap="round" id="ring-circle"/>
+          <defs>
+            <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#f72585"/>
+              <stop offset="50%" stop-color="#4cc9f0"/>
+              <stop offset="100%" stop-color="#7bf1a8"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="ring-text">
+          <div class="ring-pct" id="ring-pct">0%</div>
+          <div class="ring-sub">COMPLETE</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Month breakdown -->
+    <div class="card">
+      <div class="section-title" style="margin-top:0;">MONTHLY BREAKDOWN</div>
+      <div class="month-bar">
+        <div class="month-bar-top"><span class="month-name" style="color:var(--m1)">M1 · JS + React + Next.js</span><span class="month-pct" id="m1-pct">0/30</span></div>
+        <div class="bar-track"><div class="bar-fill" id="m1-bar" style="background:var(--m1);width:0%"></div></div>
+      </div>
+      <div class="month-bar">
+        <div class="month-bar-top"><span class="month-name" style="color:var(--m2)">M2 · FastAPI + PostgreSQL</span><span class="month-pct" id="m2-pct">0/30</span></div>
+        <div class="bar-track"><div class="bar-fill" id="m2-bar" style="background:var(--m2);width:0%"></div></div>
+      </div>
+      <div class="month-bar">
+        <div class="month-bar-top"><span class="month-name" style="color:var(--m3)">M3 · Full Stack Integration</span><span class="month-pct" id="m3-pct">0/30</span></div>
+        <div class="bar-track"><div class="bar-fill" id="m3-bar" style="background:var(--m3);width:0%"></div></div>
+      </div>
+      <div class="month-bar">
+        <div class="month-bar-top"><span class="month-name" style="color:var(--m4)">M4 · DevOps + AI + Capstone</span><span class="month-pct" id="m4-pct">0/30</span></div>
+        <div class="bar-track"><div class="bar-fill" id="m4-bar" style="background:var(--m4);width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Heatmap -->
+  <div class="card" style="margin-top:14px;">
+    <div class="section-title" style="margin-top:0;">ACTIVITY HEATMAP — 120 DAYS</div>
+    <div id="heatmap-wrap"></div>
+  </div>
+
+  <!-- Skills progress -->
+  <div class="section-title">SKILLS ACQUIRED</div>
+  <div class="grid3" id="skills-grid"></div>
+
+  <!-- Upcoming -->
+  <div class="section-title">NEXT 5 DAYS</div>
+  <div id="upcoming-days"></div>
+</div>
+
+<!-- TODAY -->
+<div class="page" id="page-today">
+  <div id="today-content"></div>
+</div>
+
+<!-- CALENDAR -->
+<div class="page" id="page-calendar">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+    <div>
+      <div style="font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:4px;">FULL CALENDAR VIEW</div>
+      <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;" id="cal-month-title">May–June 2026</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <span style="display:flex;gap:4px;align-items:center;font-size:11px;color:var(--muted)"><span style="width:10px;height:10px;background:var(--green);border-radius:2px;display:inline-block;"></span> Done</span>
+      <span style="display:flex;gap:4px;align-items:center;font-size:11px;color:var(--muted)"><span style="width:10px;height:10px;background:var(--accent);border-radius:2px;display:inline-block;"></span> Today</span>
+      <span style="display:flex;gap:4px;align-items:center;font-size:11px;color:var(--muted)"><span style="width:10px;height:10px;background:var(--red);border-radius:2px;display:inline-block;"></span> Skipped</span>
+    </div>
+  </div>
+  <div id="calendar-wrap"></div>
+</div>
+
+<!-- ALL DAYS -->
+<div class="page" id="page-alldays">
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center;">
+    <input type="text" id="search-input" placeholder="Search days, topics..." style="background:var(--surface);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:inherit;font-size:12px;padding:8px 14px;outline:none;flex:1;min-width:200px;" oninput="filterDays(this.value)"/>
+    <select id="filter-month" onchange="filterDays(document.getElementById('search-input').value)" style="background:var(--surface);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:inherit;font-size:12px;padding:8px 12px;outline:none;">
+      <option value="all">All Months</option>
+      <option value="1">Month 1</option>
+      <option value="2">Month 2</option>
+      <option value="3">Month 3</option>
+      <option value="4">Month 4</option>
+    </select>
+    <select id="filter-status" onchange="filterDays(document.getElementById('search-input').value)" style="background:var(--surface);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:inherit;font-size:12px;padding:8px 12px;outline:none;">
+      <option value="all">All</option>
+      <option value="done">Done</option>
+      <option value="today">Today</option>
+      <option value="upcoming">Upcoming</option>
+    </select>
+  </div>
+  <div id="all-days-list"></div>
+</div>
+
+<!-- REPORT -->
+<div class="page" id="page-report">
+  <div class="grid2" style="margin-bottom:16px;">
+    <div class="card">
+      <div class="section-title" style="margin-top:0;">LEARNING VELOCITY</div>
+      <div class="stat-big" id="rep-velocity" style="color:var(--accent)">—</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;">avg days/week completed</div>
+      <div class="divider"></div>
+      <div class="section-title">ESTIMATED COMPLETION</div>
+      <div style="font-size:16px;font-weight:700;color:var(--m4)" id="rep-eta">—</div>
+    </div>
+    <div class="card">
+      <div class="section-title" style="margin-top:0;">HOURS BREAKDOWN</div>
+      <div id="hours-chart"></div>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:16px;">
+    <div class="section-title" style="margin-top:0;">TOPICS COVERED</div>
+    <div id="topics-covered" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+  </div>
+  <div class="card" style="margin-bottom:16px;">
+    <div class="section-title" style="margin-top:0;">WEEKLY ACTIVITY</div>
+    <div id="weekly-chart"></div>
+  </div>
+  <div class="card">
+    <div class="section-title" style="margin-top:0;">MOOD LOG</div>
+    <div id="mood-chart"></div>
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  DATA — 120 DAYS SCHEDULE
+// ═══════════════════════════════════════════════════════
+
+function createLocalDate(year, month, day) {
+  return new Date(year, month - 1, day);
+}
+
+function toDateKey(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function fromDateKey(dateKey) {
+  const [year, month, day] = dateKey.split('-').map(Number);
+  return createLocalDate(year, month, day);
+}
+
+const START_DATE = createLocalDate(2026, 5, 11);
+const TOTAL_DAYS = 120;
+
+// Generate full schedule
+function makeDays() {
+  const schedule = [];
+  const raw = RAW_SCHEDULE;
+  let di = 0;
+  let d = new Date(START_DATE.getTime());
+  while (di < TOTAL_DAYS) {
+    // Skip Sundays only
+    if (d.getDay() !== 0) {
+      const s = raw[di] || raw[raw.length-1];
+      schedule.push({
+        dayNum: di+1,
+        date: new Date(d),
+        dateStr: toDateKey(d),
+        month: s.month,
+        week: s.week,
+        weekLabel: s.weekLabel,
+        title: s.title,
+        theme: s.theme,
+        topics: s.topics,
+        tasks: s.tasks.map(t=>({...t})),
+        project: s.project,
+        resources: s.resources,
+        hours: s.hours,
+        phase: s.phase,
+      });
+      di++;
+    }
+    d.setDate(d.getDate()+1);
+  }
+  return schedule;
+}
+
+// Raw schedule data — 120 entries
+const RAW_SCHEDULE = [
+  // ─── MONTH 1: JS + TS + REACT + NEXT.JS ───────────────────────────────
+  // Week 1 — JS Foundations
+  {month:1,week:1,weekLabel:'Week 1-2',phase:'m1',theme:'JavaScript Foundations',title:'JS Setup + ES6+ Syntax',topics:['Install VS Code, Node.js, Git','ES6+: let/const, arrow functions, template literals','Destructuring: arrays and objects','Spread and rest operators','Optional chaining ?. and nullish coalescing ??'],tasks:[{t:'Install VS Code + extensions (ESLint, Prettier, GitLens)',done:false},{t:'Set up Git + create GitHub account',done:false},{t:'Complete javascript.info Chapter 1–3',done:false},{t:'Write 10 JS exercises with ES6 syntax',done:false}],project:'Setup project. Write ES6 refactoring exercises.',resources:['javascript.info','Node.js Official'],hours:5},
+  {month:1,week:1,weekLabel:'Week 1-2',phase:'m1',theme:'JavaScript Foundations',title:'Functions, Scope & Closures',topics:['Hoisting — var vs let vs const','Scope chain — global, function, block','Closures — practical examples','IIFE pattern','this keyword — 4 rules'],tasks:[{t:'Read javascript.info: Functions deep dive',done:false},{t:'Write 5 closure examples from scratch',done:false},{t:'Debug a this-binding bug intentionally',done:false},{t:'Push notes to GitHub',done:false}],project:'Closure counter + memoize function.',resources:['javascript.info Functions','Kyle Simpson YDKJS (free)'],hours:5},
+  {month:1,week:1,weekLabel:'Week 1-2',phase:'m1',theme:'JavaScript Foundations',title:'Array Methods Mastery',topics:['map() — transform every element','filter() — select elements','reduce() — accumulate values','find(), findIndex(), some(), every()','flatMap() and chaining methods'],tasks:[{t:'Complete all FreeCodeCamp Array exercises',done:false},{t:'Solve 5 array challenges on javascript.info',done:false},{t:'Rewrite 3 for-loops using array methods',done:false},{t:'Build array method cheatsheet',done:false}],project:'Expense Tracker v0.1 — hardcoded data, rendered with map().',resources:['FreeCodeCamp JS Algorithms','javascript.info Arrays'],hours:5},
+  {month:1,week:1,weekLabel:'Week 1-2',phase:'m1',theme:'JavaScript Foundations',title:'DOM Manipulation',topics:['querySelector, querySelectorAll','createElement, appendChild, innerHTML','Event listeners — addEventListener','Event delegation pattern','Forms — input, submit, preventDefault'],tasks:[{t:'Build interactive todo list in pure JS',done:false},{t:'Implement event delegation on list',done:false},{t:'Add form validation without library',done:false},{t:'Read javascript.info DOM chapter',done:false}],project:'Expense Tracker v0.2 — DOM rendering + form input.',resources:['javascript.info DOM','MDN Web Docs DOM'],hours:5},
+  {month:1,week:1,weekLabel:'Week 1-2',phase:'m1',theme:'JavaScript Foundations',title:'Async JS — Promises',topics:['Callbacks and callback hell (understand it)','Promises — then, catch, finally','Promise.all, Promise.race, Promise.allSettled','fetch() API — GET requests','Error handling with try/catch'],tasks:[{t:'Read javascript.info Promises chapter',done:false},{t:'Fetch data from public API (JSONPlaceholder)',done:false},{t:'Implement Promise.all for parallel requests',done:false},{t:'Add loading/error state to Expense Tracker',done:false}],project:'Expense Tracker v0.3 — fetch real currency rates.',resources:['javascript.info Promises','Jake Archibald Event Loop Talk'],hours:5},
+  {month:1,week:2,weekLabel:'Week 1-2',phase:'m1',theme:'JavaScript Foundations',title:'async/await + Event Loop ⚠️',topics:['async/await syntax — cleaner Promises','Event loop: call stack, microtasks, macrotasks','setTimeout vs Promise.resolve order','Microtask queue priority','Debounce implementation from scratch ⚠️'],tasks:[{t:'Watch Jake Archibald Event Loop JSConf talk',done:false},{t:'Implement debounce function from scratch',done:false},{t:'Add debounced search to Expense Tracker',done:false},{t:'Draw event loop diagram in notes',done:false}],project:'Expense Tracker v0.4 — debounced search input.',resources:['Jake Archibald: In The Loop (YouTube)','javascript.info Event Loop'],hours:5},
+  {month:1,week:2,weekLabel:'Week 1-2',phase:'m1',theme:'JavaScript Foundations',title:'Memory, Modules & Error Handling',topics:['Memory leaks — closures holding references ⚠️','Detached DOM nodes — how to avoid','WeakMap and WeakSet for memory-safe refs','ES Modules: import/export, dynamic import()','Error types: TypeError, RangeError, custom errors'],tasks:[{t:'Read about memory leaks in Chrome DevTools',done:false},{t:'Profile Expense Tracker for memory leaks',done:false},{t:'Refactor Expense Tracker to use modules',done:false},{t:'Add proper error handling throughout app',done:false}],project:'Expense Tracker FINAL — modular, error-handled, debounced search.',resources:['Chrome DevTools Memory profiler','javascript.info Modules'],hours:5},
+  // Week 2 TS
+  {month:1,week:2,weekLabel:'Week 1-2',phase:'m1',theme:'TypeScript Basics',title:'TypeScript Introduction',topics:['Install TypeScript, tsconfig.json setup','Primitive types: string, number, boolean','Arrays: string[], number[], Array<T>','Object types and interfaces','Type aliases vs interfaces — differences'],tasks:[{t:'Install TypeScript globally + configure tsconfig',done:false},{t:'Read TypeScript Handbook: Basics',done:false},{t:'Convert Expense Tracker variables to TS',done:false},{t:'Write interface for Expense type',done:false}],project:'Begin TypeScript refactor of Expense Tracker.',resources:['TypeScript Official Handbook','Matt Pocock Total TypeScript (free)'],hours:5},
+  {month:1,week:2,weekLabel:'Week 1-2',phase:'m1',theme:'TypeScript Basics',title:'Generics + Utility Types ⚠️',topics:['Generics: why they exist, T parameter','Built-in: Array<T>, Promise<T>','Utility types: Partial<T>, Required<T>','Pick<T,K>, Omit<T,K>, Record<K,V>','Discriminated unions for type-safe state ⚠️'],tasks:[{t:'Complete Matt Pocock free exercises on generics',done:false},{t:'Create type-safe API response generic',done:false},{t:'Use Partial for update functions',done:false},{t:'Add discriminated union for app state',done:false}],project:'Expense Tracker fully typed — no "any" allowed.',resources:['Matt Pocock Total TypeScript','Execute Program TS Basics'],hours:5},
+  {month:1,week:2,weekLabel:'Week 1-2',phase:'m1',theme:'TypeScript Basics',title:'Type-safe API + Finish TS',topics:['Type-safe fetch responses ⚠️','Unknown vs any — always use unknown','Type narrowing: typeof, instanceof, in','Exhaustive checks with never','tsconfig strict mode settings'],tasks:[{t:'Type all API responses — zero any',done:false},{t:'Enable strict mode in tsconfig',done:false},{t:'Fix all TypeScript errors from strict',done:false},{t:'Final code review + push to GitHub',done:false}],project:'WEEK 1-2 FINISH: Expense Tracker — deployed on GitHub Pages.',resources:['TypeScript Deep Dive (free book)','typescript-strict-mode guide'],hours:5},
+  // Week 3 React Core
+  {month:1,week:3,weekLabel:'Week 3-4',phase:'m1',theme:'React Core',title:'React Setup + JSX + Components',topics:['Create Vite project with React + TypeScript','JSX syntax — what it compiles to','Functional components','Props — passing data, typing with TypeScript','Children prop, composition'],tasks:[{t:'Create new Vite + React + TypeScript project',done:false},{t:'Read react.dev/learn: Describing the UI',done:false},{t:'Build 5 small stateless components',done:false},{t:'Type all props with TypeScript interfaces',done:false}],project:'Movie Search App skeleton — layout components.',resources:['react.dev/learn','Scrimba React Course'],hours:5},
+  {month:1,week:3,weekLabel:'Week 3-4',phase:'m1',theme:'React Core',title:'State & Effects',topics:['useState — primitive, object, array state','Updating state correctly (immutability)','useEffect — mount, update, cleanup','Dependency array behavior','Fetch data in useEffect + loading/error states'],tasks:[{t:'Read react.dev/learn: Adding Interactivity',done:false},{t:'Build a counter with useState',done:false},{t:'Fetch TMDB API in useEffect',done:false},{t:'Add loading spinner + error message',done:false}],project:'Movie Search App — fetch movies, display results.',resources:['react.dev/learn State','TMDB API (free)'],hours:5},
+  {month:1,week:3,weekLabel:'Week 3-4',phase:'m1',theme:'React Core',title:'Hooks Deep Dive + Performance ⚠️',topics:['useRef — DOM refs + mutable values','useMemo — expensive computation caching','useCallback — stable function references','Custom hooks — extract reusable logic','When NOT to use memo (premature optimization) ⚠️'],tasks:[{t:'Read: When to useMemo and useCallback',done:false},{t:'Build useDebounce custom hook',done:false},{t:'Build useFetch custom hook',done:false},{t:'Profile app in React DevTools','done':false}],project:'Movie Search App — custom hooks + debounced search.',resources:['Josh Comeau useMemo article','React DevTools Profiler docs'],hours:5},
+  {month:1,week:3,weekLabel:'Week 3-4',phase:'m1',theme:'React Core',title:'React Router v6',topics:['BrowserRouter, Routes, Route setup','Link and NavLink navigation','useParams, useNavigate, useLocation','Nested routes — layout pattern','Protected routes with auth check'],tasks:[{t:'Install React Router v6',done:false},{t:'Add /movies, /movies/:id routes',done:false},{t:'Build movie detail page with useParams',done:false},{t:'Add 404 route',done:false}],project:'Movie Search App — multi-page with routing.',resources:['React Router v6 Docs','Scrimba React Router tutorial'],hours:5},
+  {month:1,week:3,weekLabel:'Week 3-4',phase:'m1',theme:'React Core',title:'Component Architecture ⚠️',topics:['Container vs presentational components ⚠️','Feature-based folder structure ⚠️','Error boundaries — class component wrapping','Suspense + React.lazy code splitting','Tailwind CSS integration with React'],tasks:[{t:'Refactor into feature-based folders',done:false},{t:'Add ErrorBoundary component',done:false},{t:'Add Suspense + lazy for route-based splitting',done:false},{t:'Install + configure Tailwind CSS',done:false}],project:'Movie Search App — refactored architecture.',resources:['Patterns.dev (free)','Tailwind CSS Docs'],hours:5},
+  {month:1,week:4,weekLabel:'Week 3-4',phase:'m1',theme:'React Core',title:'Skeleton Loaders + Finish React',topics:['Skeleton loading pattern — UX best practice','Error boundary fallback UI','Framer Motion basics for transitions','Responsive layout with Tailwind','Accessibility basics — aria-label, role'],tasks:[{t:'Build SkeletonCard component',done:false},{t:'Add page transition animations',done:false},{t:'Make layout fully responsive',done:false},{t:'Lighthouse accessibility audit',done:false}],project:'Movie Search App FINAL — responsive, accessible, deployed.',resources:['Framer Motion Docs','Tailwind CSS Responsive'],hours:5},
+  // Week 4 Next.js
+  {month:1,week:4,weekLabel:'Week 4 Extension',phase:'m1',theme:'Next.js CRITICAL',title:'Next.js App Router Introduction',topics:['Create Next.js 14 project + App Router','File-based routing — app/ directory','Server Components vs Client Components ⚠️','When to add "use client" directive','Layout.tsx and page.tsx pattern'],tasks:[{t:'Create Next.js 14 project with TypeScript',done:false},{t:'Read nextjs.org/learn — full tutorial',done:false},{t:'Build first server component page',done:false},{t:'Compare server vs client component output',done:false}],project:'Start converting Movie App to Next.js.',resources:['Next.js Official Learn Course','Next.js App Router Docs'],hours:5},
+  {month:1,week:4,weekLabel:'Week 4 Extension',phase:'m1',theme:'Next.js CRITICAL',title:'SSR vs CSR vs SSG ⚠️',topics:['SSR — Server Side Rendering, when to use','SSG — Static Site Generation, when to use','CSR — Client Side, when to use','ISR — Incremental Static Regeneration','fetch() in Server Components with caching'],tasks:[{t:'Build one page each: SSR, SSG, CSR',done:false},{t:'Compare loading behavior in browser',done:false},{t:'Use fetch with cache: "no-store" for SSR',done:false},{t:'Measure performance differences in DevTools',done:false}],project:'Movie App — movies page as SSG, search as CSR.',resources:['Next.js Data Fetching Docs','Vercel SSR vs SSG explanation'],hours:5},
+  {month:1,week:4,weekLabel:'Week 4 Extension',phase:'m1',theme:'Next.js CRITICAL',title:'API Routes + Deploy',topics:['API Routes — app/api/route.ts pattern','Route handlers: GET, POST, dynamic','next/image — automatic optimization','next/font — performance font loading','Deploy to Vercel — zero config'],tasks:[{t:'Build /api/search route fetching TMDB',done:false},{t:'Replace direct fetch with API route',done:false},{t:'Use next/image for all movie posters',done:false},{t:'Deploy to Vercel + share live URL',done:false}],project:'Movie App NEXT.JS FINAL — deployed on Vercel live.',resources:['Vercel Deployment Docs','Next.js API Routes Docs'],hours:5},
+  // Filler to reach day 20
+  {month:1,week:4,weekLabel:'Week 4 Review',phase:'m1',theme:'Month 1 Consolidation',title:'Review + Polish Month 1',topics:['Review all JS concepts: closures, async, event loop','TypeScript strict mode fixes','React render optimization review','Next.js App Router mental model','Git commit history cleanup'],tasks:[{t:'Write a blog post / notes about what you learned',done:false},{t:'Review and refactor all Month 1 code',done:false},{t:'Add proper READMEs to all GitHub repos',done:false},{t:'Solve 3 LeetCode Easy problems',done:false}],project:'Month 1 REVIEW: polish all 3 projects.',resources:['Your own notes','LeetCode Easy array problems'],hours:5},
+  {month:1,week:4,weekLabel:'Week 4 Review',phase:'m1',theme:'Month 1 Consolidation',title:'TypeScript + React Integration Deep',topics:['Typing all event handlers: React.ChangeEvent','Typing refs: useRef<HTMLInputElement>','Type-safe custom hooks return types','Zustand type setup preview','React.FC vs function component — preference'],tasks:[{t:'Add types to all event handlers',done:false},{t:'Type all useRef usages properly',done:false},{t:'Read about React.FC controversy',done:false},{t:'Push all typed code to GitHub',done:false}],project:'All Month 1 code: fully typed, zero errors.',resources:['TypeScript React Cheatsheet (free GitHub)'],hours:5},
+
+  // ─── MONTH 2: FASTAPI + AUTH + POSTGRESQL ─────────────────────────────
+  // Week 5-6 FastAPI
+  {month:2,week:5,weekLabel:'Week 5-6',phase:'m2',theme:'FastAPI Fundamentals',title:'Python Env + FastAPI Hello World',topics:['Virtual environment setup: venv or poetry','FastAPI installation + uvicorn','First endpoint: GET /health','Path parameters, query parameters','Pydantic v2: BaseModel, Field validators'],tasks:[{t:'Set up Python venv + install FastAPI',done:false},{t:'Build /health + /hello/{name} endpoints',done:false},{t:'Read FastAPI official tutorial: First Steps',done:false},{t:'Test endpoints in Swagger UI',done:false}],project:'Blog API v0.1 — health + basic CRUD skeleton.',resources:['fastapi.tiangolo.com/learn/','FastAPI Official Tutorial'],hours:5},
+  {month:2,week:5,weekLabel:'Week 5-6',phase:'m2',theme:'FastAPI Fundamentals',title:'Layered Architecture ⚠️',topics:['Routes layer — HTTP only, no logic ⚠️','Service layer — all business logic here ⚠️','Repository layer — all DB queries here ⚠️','DTO vs DB model separation ⚠️','Dependency Injection with Depends()'],tasks:[{t:'Watch ArjanCodes Clean Architecture video',done:false},{t:'Scaffold layered folder structure',done:false},{t:'Move business logic to services/',done:false},{t:'Create separate Pydantic schemas vs models',done:false}],project:'Blog API — layered architecture refactor.',resources:['ArjanCodes Repository Pattern (YouTube)','FastAPI Depends() docs'],hours:5},
+  {month:2,week:5,weekLabel:'Week 5-6',phase:'m2',theme:'FastAPI Fundamentals',title:'Request Body + Validation',topics:['POST/PUT with Pydantic body','Nested models','Field() — validators, constraints, defaults','Custom validators with @field_validator','HTTPException — status codes, detail messages'],tasks:[{t:'Build CreatePost, UpdatePost schemas',done:false},{t:'Add field validation: min/max length',done:false},{t:'Add custom validator for slug format',done:false},{t:'Test all error cases in Postman',done:false}],project:'Blog API — full CRUD with validation.',resources:['Pydantic v2 Docs','FastAPI Body tutorial'],hours:5},
+  {month:2,week:5,weekLabel:'Week 5-6',phase:'m2',theme:'FastAPI Fundamentals',title:'Async FastAPI + Middleware',topics:['async def vs def — when each','Background tasks with BackgroundTasks','CORS middleware — allow React origin','Custom middleware — request logging','Environment variables with pydantic-settings'],tasks:[{t:'Convert all routes to async def',done:false},{t:'Add CORS for localhost:5173 (Vite)',done:false},{t:'Add request timing middleware',done:false},{t:'Set up .env + pydantic Settings class',done:false}],project:'Blog API — async, CORS configured, settings.',resources:['FastAPI Middleware docs','pydantic-settings docs'],hours:5},
+  {month:2,week:5,weekLabel:'Week 5-6',phase:'m2',theme:'FastAPI Fundamentals',title:'FastAPI Testing Intro',topics:['TestClient from httpx for sync tests','Async test setup with pytest-asyncio','First test: GET /health','Arrange-Act-Assert pattern','pytest fixtures — DRY test setup'],tasks:[{t:'Install pytest + httpx + pytest-asyncio',done:false},{t:'Write 5 tests for Blog API endpoints',done:false},{t:'Add pytest to pre-commit check',done:false},{t:'Aim for green tests before moving on',done:false}],project:'Blog API — 5 passing tests.',resources:['FastAPI Testing docs','pytest official docs'],hours:5},
+  {month:2,week:6,weekLabel:'Week 5-6',phase:'m2',theme:'FastAPI Auth',title:'JWT Auth — Foundations',topics:['JWT structure: header.payload.signature','python-jose for JWT encoding/decoding','passlib + bcrypt for password hashing','OAuth2PasswordBearer scheme','Access token: 15min expiry'],tasks:[{t:'Install python-jose, passlib, bcrypt',done:false},{t:'Build /auth/register endpoint',done:false},{t:'Build /auth/login endpoint → returns JWT',done:false},{t:'Add current_user dependency',done:false}],project:'Blog API — register + login working.',resources:['FastAPI Security Tutorial','JWT.io Debugger'],hours:5},
+  {month:2,week:6,weekLabel:'Week 5-6',phase:'m2',theme:'FastAPI Auth',title:'Refresh Tokens + Security ⚠️',topics:['Refresh token: 7-day expiry strategy','Refresh token rotation — new on each use ⚠️','HTTP-only cookies vs localStorage tradeoffs ⚠️','CSRF protection with SameSite cookies ⚠️','Rate limiting with slowapi ⚠️'],tasks:[{t:'Implement refresh token endpoint',done:false},{t:'Store refresh token in HTTP-only cookie',done:false},{t:'Add SameSite=strict to cookie',done:false},{t:'Install slowapi + add to /auth/login',done:false}],project:'Blog API — production-grade auth.',resources:['OWASP Top 10','slowapi docs'],hours:5},
+  {month:2,week:6,weekLabel:'Week 5-6',phase:'m2',theme:'FastAPI Auth',title:'RBAC + Password Reset ⚠️',topics:['Role enum: USER, ADMIN, MODERATOR','Role check dependency','Password reset flow: email token','Token expiry + one-time use','Secure headers: HSTS, X-Frame-Options'],tasks:[{t:'Add role field to User model',done:false},{t:'Create require_admin dependency',done:false},{t:'Build /auth/forgot-password endpoint',done:false},{t:'Add security headers middleware',done:false}],project:'Blog API — RBAC + password reset flow.',resources:['OWASP Auth Cheatsheet','FastAPI Advanced Security'],hours:5},
+  // Week 7-8 PostgreSQL
+  {month:2,week:7,weekLabel:'Week 7-8',phase:'m2',theme:'PostgreSQL + SQLAlchemy',title:'SQLAlchemy 2.0 Setup',topics:['SQLAlchemy 2.0 — declarative_base','Mapped[] type annotations (new syntax)','create_async_engine + AsyncSession','async_sessionmaker factory','Dependency: get_db async generator'],tasks:[{t:'Install sqlalchemy[asyncio] + asyncpg',done:false},{t:'Create User and Post models',done:false},{t:'Set up async engine with PostgreSQL',done:false},{t:'Create get_db dependency',done:false}],project:'Blog API — SQLAlchemy models created.',resources:['SQLAlchemy 2.0 ORM Tutorial','Very Academy SQLAlchemy YouTube'],hours:5},
+  {month:2,week:7,weekLabel:'Week 7-8',phase:'m2',theme:'PostgreSQL + SQLAlchemy',title:'Alembic Migrations',topics:['Alembic init — env.py setup','Create first migration: users + posts tables','alembic upgrade head','Adding columns safely (nullable first)','Downgrade migrations — how and when'],tasks:[{t:'Install alembic + configure env.py',done:false},{t:'Generate initial migration',done:false},{t:'Run migration on PostgreSQL',done:false},{t:'Add timestamps migration as second commit',done:false}],project:'Blog API — PostgreSQL running with Alembic.',resources:['Alembic Official Tutorial','Alembic autogenerate guide'],hours:5},
+  {month:2,week:7,weekLabel:'Week 7-8',phase:'m2',theme:'PostgreSQL + SQLAlchemy',title:'Relationships + Joins',topics:['ForeignKey and relationship()','One-to-many: User → Posts','Many-to-many: Post ↔ Tags via association table','Eager loading: selectinload, joinedload','Lazy loading anti-pattern — N+1 ⚠️'],tasks:[{t:'Add Category model + Post FK',done:false},{t:'Add Tag model + post_tags association',done:false},{t:'Use selectinload for posts with tags',done:false},{t:'Demonstrate and fix N+1 query',done:false}],project:'Blog API — relationships working.',resources:['SQLAlchemy Relationships Docs','N+1 problem explained'],hours:5},
+  {month:2,week:7,weekLabel:'Week 7-8',phase:'m2',theme:'PostgreSQL + SQLAlchemy',title:'Indexing + Query Optimization ⚠️',topics:['B-tree index — default, when to use','Composite index — multiple columns','Partial index — WHERE clause index','EXPLAIN ANALYZE — read query plans ⚠️','Index on FK columns — critical rule'],tasks:[{t:'Add index on post.user_id FK',done:false},{t:'Add composite index on (created_at, status)',done:false},{t:'Run EXPLAIN ANALYZE on 3 queries',done:false},{t:'Find and fix one slow query',done:false}],project:'Blog API — indexed and optimized.',resources:['PostgreSQL EXPLAIN ANALYZE docs','Use The Index Luke (free book)'],hours:5},
+  {month:2,week:8,weekLabel:'Week 7-8',phase:'m2',theme:'PostgreSQL + SQLAlchemy',title:'Cursor Pagination ⚠️',topics:['OFFSET pagination — why it breaks at scale','Cursor-based pagination — keyset pagination ⚠️','Encoding cursor: base64 encoded timestamp+id','Implementing next_cursor + prev_cursor','Returning pagination metadata in response'],tasks:[{t:'Read: Why cursor pagination beats OFFSET',done:false},{t:'Implement cursor-based pagination for posts',done:false},{t:'Return next_cursor in API response',done:false},{t:'Test with 1000 seeded posts',done:false}],project:'Blog API — cursor pagination for all list endpoints.',resources:['Shopify cursor pagination blog','Relay Cursor Pagination spec'],hours:5},
+  {month:2,week:8,weekLabel:'Week 7-8',phase:'m2',theme:'PostgreSQL + SQLAlchemy',title:'Transactions + Redis Caching ⚠️',topics:['Database transactions — ACID guarantees','SELECT FOR UPDATE — optimistic locking','Redis read-through caching pattern ⚠️','Write-through cache — keep DB + cache sync','TTL strategies — how to choose TTL ⚠️'],tasks:[{t:'Add transaction for transfer operation',done:false},{t:'Install redis[asyncio] + aioredis',done:false},{t:'Cache /posts/{id} with 5-min TTL',done:false},{t:'Invalidate cache on post update',done:false}],project:'Blog API — Redis cache layer on popular endpoints.',resources:['Redis University (free)','aioredis docs'],hours:5},
+  {month:2,week:8,weekLabel:'Week 7-8',phase:'m2',theme:'PostgreSQL + SQLAlchemy',title:'Cache Invalidation + Month 2 Review ⚠️',topics:['Cache invalidation strategies ⚠️','Tag-based invalidation — group keys','Write-through vs write-behind','Bull/queue pattern preview','Month 2 code quality review'],tasks:[{t:'Implement tag-based cache invalidation',done:false},{t:'Add cache warming on startup',done:false},{t:'Review all endpoints for missing indices',done:false},{t:'Write month 2 learning summary',done:false}],project:'Blog API v2 FINAL — deployed to Railway free tier.',resources:['Railway.app deployment','Redis patterns book (free chapter)'],hours:5},
+  // Padding to 40
+  {month:2,week:8,weekLabel:'Week 8 Extra',phase:'m2',theme:'PostgreSQL + SQLAlchemy',title:'Full Text Search + PostgreSQL Features',topics:['PostgreSQL full-text search: tsvector, tsquery','GIN index for full-text','JSONB columns — flexible data','PostgreSQL array type','Computed columns with @hybrid_property'],tasks:[{t:'Add full-text search to posts',done:false},{t:'Create GIN index on search vector',done:false},{t:'Test search performance with EXPLAIN',done:false},{t:'Add search endpoint to Blog API',done:false}],project:'Blog API — full-text search endpoint.',resources:['PostgreSQL Full Text Search docs','SQLAlchemy hybrid properties'],hours:5},
+  {month:2,week:8,weekLabel:'Week 8 Extra',phase:'m2',theme:'Month 2 Consolidation',title:'Month 2 Polish + Swagger Docs',topics:['Swagger UI customization','API versioning strategy — /v1/ prefix','Response model examples','Tags and operation_id for clean docs','Health endpoint with DB check'],tasks:[{t:'Add proper tags to all routes',done:false},{t:'Add example values to all schemas',done:false},{t:'Add /v1/ prefix to all routes',done:false},{t:'Add DB health check to /health',done:false}],project:'Blog API — production-quality Swagger docs.',resources:['FastAPI OpenAPI Customization','API Design Best Practices'],hours:5},
+
+  // ─── MONTH 3: FULL STACK INTEGRATION ──────────────────────────────────
+  {month:3,week:9,weekLabel:'Week 9-10',phase:'m3',theme:'React Advanced',title:'TanStack Query Setup',topics:['Why React Query over useEffect for data','QueryClient + QueryClientProvider setup','useQuery — queryKey, queryFn, options','Loading, error, success states from query','Stale time and cache time config'],tasks:[{t:'Install @tanstack/react-query',done:false},{t:'Replace all useEffect fetches with useQuery',done:false},{t:'Configure QueryClient with defaults',done:false},{t:'Add query DevTools for debugging',done:false}],project:'Blog App frontend — connect to Blog API.',resources:['TanStack Query Docs','TanStack Query v5 migration guide'],hours:5},
+  {month:3,week:9,weekLabel:'Week 9-10',phase:'m3',theme:'React Advanced',title:'Mutations + Optimistic Updates ⚠️',topics:['useMutation — mutate, isPending, isError','Invalidating queries after mutations','Optimistic updates — instant UI feedback ⚠️','Rollback on mutation error','Error retry strategies — exponential backoff ⚠️'],tasks:[{t:'Build createPost mutation',done:false},{t:'Implement optimistic post creation',done:false},{t:'Add rollback on failed post',done:false},{t:'Test offline behavior',done:false}],project:'Blog App — create/edit/delete with optimistic UI.',resources:['TanStack Query Optimistic Updates','Optimistic UI patterns article'],hours:5},
+  {month:3,week:9,weekLabel:'Week 9-10',phase:'m3',theme:'React Advanced',title:'Zustand State + API Abstraction ⚠️',topics:['Zustand vs React Query — what each handles','Zustand store: state + actions','State architecture decision ⚠️','API layer abstraction — api/client.ts ⚠️','Axios interceptors for token refresh'],tasks:[{t:'Create Zustand auth store',done:false},{t:'Build api/client.ts with axios instance',done:false},{t:'Add request interceptor: attach Bearer token',done:false},{t:'Add response interceptor: refresh on 401',done:false}],project:'Blog App — Zustand auth + axios interceptors.',resources:['Zustand GitHub README','Axios Interceptors docs'],hours:5},
+  {month:3,week:9,weekLabel:'Week 9-10',phase:'m3',theme:'React Advanced',title:'Forms + Validation',topics:['React Hook Form — register, handleSubmit, errors','Controlled vs uncontrolled (React Hook Form is uncontrolled)','Zod schema validation','zodResolver integration','shadcn/ui form components'],tasks:[{t:'Install react-hook-form + zod + @hookform/resolvers',done:false},{t:'Build PostForm with full validation',done:false},{t:'Add password strength validation',done:false},{t:'Style with shadcn/ui Input + Button',done:false}],project:'Blog App — all forms with validation.',resources:['React Hook Form Docs','shadcn/ui form guide'],hours:5},
+  {month:3,week:10,weekLabel:'Week 9-10',phase:'m3',theme:'React Advanced',title:'Auth Flow in React',topics:['JWT storage strategy: HTTP-only cookies vs memory','Protected routes implementation','Auth context vs Zustand for auth state','Token refresh on page reload','Logout — clear state + cookies'],tasks:[{t:'Build AuthProvider with Zustand',done:false},{t:'Build ProtectedRoute component',done:false},{t:'Handle page reload with token refresh',done:false},{t:'Build logout flow — clear everything',done:false}],project:'Blog App — full auth: login, protected routes, logout.',resources:['Auth patterns in React article','OWASP JWT storage guidance'],hours:5},
+  {month:3,week:10,weekLabel:'Week 9-10',phase:'m3',theme:'React Advanced',title:'Infinite Scroll + Performance',topics:['useInfiniteQuery for cursor pagination','Intersection Observer for scroll trigger','React.memo — prevent unnecessary renders','Bundle analysis with vite-bundle-visualizer','Code splitting by route'],tasks:[{t:'Implement infinite scroll on post list',done:false},{t:'Add Intersection Observer hook',done:false},{t:'Analyze bundle size',done:false},{t:'Split code by route with lazy()',done:false}],project:'Blog App FULL — infinite scroll, code split, optimized.',resources:['TanStack Query Infinite Queries','Intersection Observer API'],hours:5},
+  // Week 11 Real-time
+  {month:3,week:11,weekLabel:'Week 11',phase:'m3',theme:'Real-time Systems',title:'WebSockets in FastAPI',topics:['WebSocket endpoint in FastAPI','ConnectionManager — track connections','Broadcast to all clients','Per-room connections (chat rooms)','WebSocket ping/pong heartbeat'],tasks:[{t:'Build /ws/{room_id} WebSocket endpoint',done:false},{t:'Implement ConnectionManager class',done:false},{t:'Build React WebSocket hook useWebSocket',done:false},{t:'Test with 2 browser tabs',done:false}],project:'Chat App v0.1 — basic real-time messaging.',resources:['FastAPI WebSockets Official','MDN WebSocket API'],hours:5},
+  {month:3,week:11,weekLabel:'Week 11',phase:'m3',theme:'Real-time Systems',title:'WebSocket Scaling with Redis ⚠️',topics:['Why single-server WebSockets break at scale ⚠️','Redis Pub/Sub for multi-server broadcast ⚠️','Subscribe to channel on connect','Publish message to Redis channel','Reconnect logic — exponential backoff ⚠️'],tasks:[{t:'Set up Redis Pub/Sub for chat',done:false},{t:'Handle subscribe/publish in FastAPI',done:false},{t:'Implement reconnect in React hook',done:false},{t:'Test with 2 FastAPI instances simulated',done:false}],project:'Chat App — Redis Pub/Sub scaling.',resources:['Redis Pub/Sub Docs','WebSocket reconnect patterns'],hours:5},
+  {month:3,week:11,weekLabel:'Week 11',phase:'m3',theme:'Real-time Systems',title:'Chat Features + Idempotency ⚠️',topics:['Typing indicator — debounced WS event','Message persistence in PostgreSQL','Idempotency — client-generated message IDs ⚠️','Read receipts pattern','File uploads via Cloudinary'],tasks:[{t:'Add typing indicator to chat',done:false},{t:'Save messages to PostgreSQL',done:false},{t:'Add message deduplication by client ID',done:false},{t:'Integrate Cloudinary for image messages',done:false}],project:'Chat App FINAL — typing, persistence, images.',resources:['Cloudinary Python SDK','Idempotency in distributed systems'],hours:5},
+  // Week 12 Testing
+  {month:3,week:12,weekLabel:'Week 12',phase:'m3',theme:'Testing Pyramid',title:'Testing Philosophy ⚠️',topics:['Testing pyramid: unit → integration → e2e ⚠️','What to test: public behavior contracts ⚠️','What NOT to test: implementation details','Test coverage % — meaningful vs meaningless','Arrange-Act-Assert pattern'],tasks:[{t:'Read Kent C. Dodds: Write tests, not too many',done:false},{t:'List what to test in Blog API',done:false},{t:'Write 3 tests that test behavior not code',done:false},{t:'Check coverage report — identify gaps',done:false}],project:'Blog API — testing strategy document.',resources:['Kent C. Dodds Testing Blog','Martin Fowler Testing Pyramid'],hours:5},
+  {month:3,week:12,weekLabel:'Week 12',phase:'m3',theme:'Testing Pyramid',title:'Backend Tests Deep',topics:['pytest fixtures scope: function, module, session','Factory Boy — generate test data','AsyncClient for testing async endpoints','Database test isolation — rollback after each','Parametrize for multiple test cases'],tasks:[{t:'Set up test DB with rollback fixture',done:false},{t:'Create UserFactory + PostFactory',done:false},{t:'Write auth tests: register, login, refresh',done:false},{t:'Write CRUD tests for all blog endpoints',done:false}],project:'Blog API — 80%+ coverage, all auth tested.',resources:['testdriven.io FastAPI testing guide','Factory Boy docs'],hours:5},
+  {month:3,week:12,weekLabel:'Week 12',phase:'m3',theme:'Testing Pyramid',title:'Frontend Tests',topics:['Vitest setup in Vite project','React Testing Library — render, screen, userEvent','getByRole — accessible queries preferred','MSW — mock HTTP calls in tests','Testing custom hooks with renderHook'],tasks:[{t:'Install Vitest + @testing-library/react + MSW',done:false},{t:'Test PostCard renders correctly',done:false},{t:'Test PostForm submits + shows errors',done:false},{t:'Mock API with MSW handlers',done:false}],project:'Blog App frontend — component tests passing.',resources:['React Testing Library Docs','MSW Getting Started'],hours:5},
+  {month:3,week:12,weekLabel:'Week 12',phase:'m3',theme:'Testing Pyramid',title:'Month 3 Integration + Polish',topics:['End-to-end flow: React → FastAPI → PostgreSQL','Celery setup for background tasks','Email with Resend API (free 3k/month)','Month 3 code review','Pre-commit hooks: lint + type check + test'],tasks:[{t:'Full end-to-end test of blog creation flow',done:false},{t:'Add email notification on new comment (Celery)',done:false},{t:'Set up pre-commit hooks',done:false},{t:'Review + polish all Month 3 code',done:false}],project:'Month 3 REVIEW: all projects deployed.',resources:['Celery Docs','Resend Python SDK'],hours:5},
+  // Extra M3
+  {month:3,week:12,weekLabel:'Week 12 Extra',phase:'m3',theme:'Month 3 Consolidation',title:'Debugging Training ⚠️',topics:['Debugging slow API: timing middleware + EXPLAIN ⚠️','Debugging memory leak: Chrome profiler ⚠️','Debugging infinite re-render: React DevTools ⚠️','Debugging slow query: pg_stat_statements','Reproduce → isolate → fix methodology ⚠️'],tasks:[{t:'Intentionally cause slow API — find and fix',done:false},{t:'Cause memory leak in React — find and fix',done:false},{t:'Cause infinite re-render — find and fix',done:false},{t:'Document debugging process in notes',done:false}],project:'Debugging challenges — 3 fixed + documented.',resources:['Chrome DevTools Performance docs','React DevTools Profiler'],hours:5},
+  {month:3,week:12,weekLabel:'Week 12 Extra',phase:'m3',theme:'Month 3 Consolidation',title:'Code Architecture Review ⚠️',topics:['Folder structure audit — is it intuitive?','Service layer — does it isolate logic?','Component architecture — single responsibility','Dead code elimination','Naming consistency review'],tasks:[{t:'Audit all folder structures',done:false},{t:'Extract any logic still in routes',done:false},{t:'Rename anything confusing',done:false},{t:'Remove all console.logs and debug code',done:false}],project:'All code: production-ready architecture.',resources:['Clean Code (free summary)','Refactoring Guru (free patterns)'],hours:5},
+
+  // ─── MONTH 4: DEVOPS + AI + SYSTEM DESIGN + CAPSTONE ──────────────────
+  {month:4,week:13,weekLabel:'Week 13',phase:'m4',theme:'Docker',title:'Docker Fundamentals',topics:['What Docker solves — consistent environments','Image vs container — the difference','Dockerfile: FROM, RUN, COPY, EXPOSE, CMD','docker build + docker run + docker ps','Port mapping: -p 8000:8000'],tasks:[{t:'Watch TechWorld with Nana Docker crash course',done:false},{t:'Write Dockerfile for FastAPI app',done:false},{t:'Build image + run container',done:false},{t:'Test /health from container',done:false}],project:'FastAPI containerized — running in Docker.',resources:['Docker Official Get Started','TechWorld with Nana Docker (YouTube)'],hours:5},
+  {month:4,week:13,weekLabel:'Week 13',phase:'m4',theme:'Docker',title:'Multi-stage Builds ⚠️',topics:['Multi-stage builds — builder vs production ⚠️','Alpine base images — why smaller is better','Layer caching — order matters for speed','.dockerignore — exclude node_modules etc','Build arguments + runtime environment vars'],tasks:[{t:'Refactor to multi-stage Dockerfile',done:false},{t:'Compare image sizes: before/after',done:false},{t:'Add .dockerignore properly',done:false},{t:'Use ARG for build-time variables',done:false}],project:'FastAPI — optimized 80% smaller Docker image.',resources:['Docker Multi-stage Docs','Best practices for Dockerfiles'],hours:5},
+  {month:4,week:13,weekLabel:'Week 13',phase:'m4',theme:'Docker',title:'Docker Compose — Full Stack',topics:['docker-compose.yml syntax','Services: app, db, redis','Volumes for PostgreSQL data persistence','Networks — service-to-service DNS ⚠️','Health checks — depends_on with condition'],tasks:[{t:'Write docker-compose with FastAPI+PG+Redis',done:false},{t:'Add named volume for PostgreSQL',done:false},{t:'Test service-to-service communication',done:false},{t:'Add health check to postgres service',done:false}],project:'Chat App — full stack running via docker-compose.',resources:['Docker Compose Docs','FastAPI Docker deployment guide'],hours:5},
+  {month:4,week:13,weekLabel:'Week 13',phase:'m4',theme:'Docker',title:'Nginx + React in Docker',topics:['nginx as reverse proxy for React SPA','nginx.conf for SPA: try_files /$uri /index.html','Multi-stage React: node build → nginx serve','Container networking — frontend talks to backend','Exposing only port 80/443 externally'],tasks:[{t:'Write Dockerfile for React with nginx',done:false},{t:'Configure nginx.conf for SPA routing',done:false},{t:'Add React to docker-compose',done:false},{t:'Test full stack via docker-compose up',done:false}],project:'FULL STACK: React + FastAPI + PG + Redis via Docker.',resources:['nginx SPA config guide','React Docker Best Practices'],hours:5},
+  // Week 14 CI/CD
+  {month:4,week:14,weekLabel:'Week 14',phase:'m4',theme:'CI/CD',title:'GitHub Actions Basics',topics:['YAML syntax for GitHub Actions','Workflow triggers: push, pull_request','Jobs and steps','Checkout action + setup-python/node','Running tests in CI pipeline'],tasks:[{t:'Read GitHub Actions Quickstart',done:false},{t:'Create .github/workflows/ci.yml',done:false},{t:'Run pytest on every push',done:false},{t:'Run Vitest on every push',done:false}],project:'CI pipeline: tests run on every git push.',resources:['GitHub Actions Quickstart','GitHub Actions Marketplace'],hours:5},
+  {month:4,week:14,weekLabel:'Week 14',phase:'m4',theme:'CI/CD',title:'Full CD Pipeline + Rollback ⚠️',topics:['Deploy to Railway on main branch merge','Deploy to Vercel on main branch merge','Secrets management in GitHub Actions ⚠️','Environment promotion: staging → prod ⚠️','Rollback strategy: git revert + re-deploy ⚠️'],tasks:[{t:'Set up Railway deployment action',done:false},{t:'Set up Vercel deployment action',done:false},{t:'Store all secrets in GitHub Secrets',done:false},{t:'Practice rollback: deploy bad code → revert',done:false}],project:'Full CI/CD: test → build → deploy → live.',resources:['Railway GitHub Actions docs','Vercel GitHub Actions integration'],hours:5},
+  {month:4,week:14,weekLabel:'Week 14',phase:'m4',theme:'CI/CD',title:'Sentry + Logging ⚠️',topics:['Sentry for Python: capture exceptions','Sentry for React: error boundary integration','Loguru structured logging ⚠️','Log levels: DEBUG, INFO, WARNING, ERROR','Centralized log format: JSON logs'],tasks:[{t:'Install + configure Sentry in FastAPI',done:false},{t:'Install + configure Sentry in React',done:false},{t:'Replace print() with Loguru logger',done:false},{t:'Create JSON log format for production',done:false}],project:'Blog API — Sentry + structured JSON logging.',resources:['Sentry FastAPI Setup','Loguru docs'],hours:5},
+  // Week 15 AI
+  {month:4,week:15,weekLabel:'Week 15',phase:'m4',theme:'AI Integration',title:'Groq API + Streaming ⚠️',topics:['Groq API setup — free, fastest inference','Chat completions endpoint','Streaming responses with SSE ⚠️','Streaming in React: EventSource API','System prompt engineering basics'],tasks:[{t:'Create Groq account + get free API key',done:false},{t:'Build /ai/chat FastAPI endpoint',done:false},{t:'Implement SSE streaming response',done:false},{t:'React: read streaming response word-by-word',done:false}],project:'Add AI chat to Blog App — streaming responses.',resources:['Groq API Docs','FastAPI SSE streaming'],hours:5},
+  {month:4,week:15,weekLabel:'Week 15',phase:'m4',theme:'AI Integration',title:'LangChain + Cost Optimization ⚠️',topics:['LangChain: chains, prompts, output parsers','PromptTemplate for reusable prompts','Rate limiting AI endpoints ⚠️','Token counting with tiktoken ⚠️','Cost optimization: smaller models for simple tasks'],tasks:[{t:'Install LangChain + build first chain',done:false},{t:'Build post summarization feature',done:false},{t:'Add rate limit: 10 AI calls/hour/user',done:false},{t:'Count tokens before sending request',done:false}],project:'Blog App AI: summarize post + rate limited.',resources:['LangChain Python Quickstart','tiktoken docs'],hours:5},
+  // Week 16 System Design + Capstone
+  {month:4,week:16,weekLabel:'Week 16',phase:'m4',theme:'System Design',title:'System Design — Blog System ⚠️',topics:['Design Blog system from scratch ⚠️','DB schema tradeoffs: normalization vs denormalization','Caching strategy for high-read blog ⚠️','CDN for static assets','API design: consistency vs flexibility'],tasks:[{t:'Design Blog system on Excalidraw',done:false},{t:'Justify every schema decision in notes',done:false},{t:'Choose caching strategy — defend your choice',done:false},{t:'Walk through design as if in interview',done:false}],project:'System Design Doc: Blog System on Excalidraw.',resources:['System Design Primer (GitHub)','Excalidraw.com'],hours:5},
+  {month:4,week:16,weekLabel:'Week 16',phase:'m4',theme:'System Design',title:'System Design — Chat System ⚠️',topics:['Design Chat system — scalable ⚠️','WebSocket server scaling with Redis ⚠️','Message storage schema','Presence system — online/offline','Fan-out patterns for notifications'],tasks:[{t:'Design Chat system on Excalidraw',done:false},{t:'Explain WebSocket scaling approach',done:false},{t:'Design message schema with indexes',done:false},{t:'Review Chat App code vs your design',done:false}],project:'System Design Doc: Chat System on Excalidraw.',resources:['System Design Interview Vol 1 (summary)','Designing Data-Intensive Applications (free chapter)'],hours:5},
+  {month:4,week:16,weekLabel:'Week 16',phase:'m4',theme:'Capstone',title:'Capstone: Architecture + Setup',topics:['Choose capstone project','Plan architecture on Excalidraw','Set up monorepo: frontend/ + backend/','CI/CD from day 1 of capstone','Write README before writing code'],tasks:[{t:'Choose: AI Resume Analyzer or Code Review Bot',done:false},{t:'Draw complete architecture diagram',done:false},{t:'Set up repo with CI/CD already configured',done:false},{t:'Write README with tech decisions + tradeoffs',done:false}],project:'CAPSTONE DAY 1: Architecture + repo setup.',resources:['Excalidraw.com','12-Factor App methodology'],hours:5},
+  {month:4,week:16,weekLabel:'Week 16',phase:'m4',theme:'Capstone',title:'Capstone: Core Features',topics:['Auth + protected routes (reuse from Blog)','Primary feature implementation','PostgreSQL schema + migrations','Sentry + logging from day 1','API versioned from start'],tasks:[{t:'Implement auth in capstone',done:false},{t:'Build primary AI or real-time feature',done:false},{t:'Set up DB + run first migration',done:false},{t:'Configure Sentry from start',done:false}],project:'CAPSTONE: Core features working.',resources:['Your previous code as reference'],hours:5},
+  {month:4,week:16,weekLabel:'Week 16',phase:'m4',theme:'Capstone',title:'Capstone: Polish + Deploy',topics:['Docker + docker-compose for capstone','CI/CD: test → deploy pipeline','Performance: lazy loading, caching','UI polish: responsive, accessible','README: live URL + architecture diagram'],tasks:[{t:'Dockerize capstone fully',done:false},{t:'Full CI/CD pipeline passing',done:false},{t:'Deploy backend to Railway',done:false},{t:'Deploy frontend to Vercel',done:false}],project:'CAPSTONE: Live deployed, CI/CD, Dockerized.',resources:['Railway.app','Vercel.com'],hours:5},
+  {month:4,week:16,weekLabel:'Week 16',phase:'m4',theme:'Job Prep',title:'DSA + Interview Prep',topics:['LeetCode: Two Sum, Valid Anagram, Contains Duplicate','Sliding Window: Maximum Subarray','Linked List: Reverse Linked List','Tree: Binary Search, DFS, BFS basics','STAR method for behavioral questions'],tasks:[{t:'Solve 5 LeetCode Easy (arrays/hashmaps)',done:false},{t:'Solve 2 LeetCode Medium (sliding window)',done:false},{t:'Practice 3 STAR behavioral answers',done:false},{t:'Mock technical interview with friend',done:false}],project:'DSA practice log: 7 problems solved.',resources:['NeetCode.io','Blind 75 list'],hours:5},
+  {month:4,week:16,weekLabel:'Week 16',phase:'m4',theme:'Job Prep',title:'Resume + Portfolio + Launch',topics:['Resume: ATS-friendly format','Quantify impact: "Built X reducing Y by Z%"','GitHub: pin 3 best repos with live demos','LinkedIn: headline, about, skills section','Apply: LinkedIn, Wellfound, Turing, Arc'],tasks:[{t:'Finalize 1-page ATS resume',done:false},{t:'Pin 3 projects with live demo links',done:false},{t:'Optimize LinkedIn with keywords',done:false},{t:'Send 10 job applications TODAY',done:false}],project:'READY TO APPLY. 🎯',resources:['Tech Interview Handbook','Levels.fyi for salary research'],hours:5},
+];
+
+// Pad to 120 if needed
+while (RAW_SCHEDULE.length < 120) {
+  const last = RAW_SCHEDULE[RAW_SCHEDULE.length - 1];
+  RAW_SCHEDULE.push({...last, title: 'Practice + Consolidation Day'});
+}
+
+const DAYS = makeDays();
+
+// ═══════════════════════════════════════════════════════
+//  STORAGE
+// ═══════════════════════════════════════════════════════
+function load(k, def) {
+  try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; }
+  catch { return def; }
+}
+function save(k, v) {
+  try { localStorage.setItem(k, JSON.stringify(v)); } catch {}
+}
+
+let state = {
+  completed: load('dp_completed', {}),   // {dayNum: {done, tasks:{}, notes, mood, hoursLogged}}
+  timerRunning: false,
+  timerSeconds: 0,
+  timerInterval: null,
+};
+
+function getDayState(dayNum) {
+  return state.completed[dayNum] || { done: false, tasks: {}, notes: '', mood: '', hoursLogged: 0 };
+}
+function saveDayState(dayNum, data) {
+  state.completed[dayNum] = data;
+  save('dp_completed', state.completed);
+}
+
+// ═══════════════════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════════════════
+function today() {
+  return toDateKey(new Date());
+}
+function getTodayDayNum() {
+  const t = today();
+  const d = DAYS.find(d => d.dateStr === t);
+  return d ? d.dayNum : null;
+}
+function getLastScheduledDayOnOrBefore(dateKey) {
+  const target = fromDateKey(dateKey);
+  for (let i = DAYS.length - 1; i >= 0; i--) {
+    if (DAYS[i].date <= target) return DAYS[i];
+  }
+  return null;
+}
+function formatDate(d) {
+  return d.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+}
+function monthColor(m) {
+  return ['','var(--m1)','var(--m2)','var(--m3)','var(--m4)'][m] || 'var(--muted)';
+}
+function monthBadge(m) {
+  return ['','badge-m1','badge-m2','badge-m3','badge-m4'][m] || '';
+}
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[ch]));
+}
+function escapeInlineString(value) {
+  return JSON.stringify(String(value ?? ''))
+    .replace(/</g, '\\u003C')
+    .replace(/>/g, '\\u003E')
+    .replace(/&/g, '\\u0026')
+    .replace(/'/g, '\\u0027');
+}
+function formatNotes(value) {
+  return escapeHtml(value).replace(/\n/g, '<br/>');
+}
+
+// Compute stats
+function getStats() {
+  const completedDays = DAYS.filter(d => getDayState(d.dayNum).done).length;
+  const daysLeft = TOTAL_DAYS - completedDays;
+  let totalHours = 0;
+  let totalTasks = 0;
+  DAYS.forEach(d => {
+    const s = getDayState(d.dayNum);
+    totalHours += (s.hoursLogged || 0);
+    totalTasks += Object.values(s.tasks||{}).filter(Boolean).length;
+  });
+  const pct = Math.round((completedDays / TOTAL_DAYS) * 100);
+  const m1done = DAYS.filter(d=>d.month===1&&getDayState(d.dayNum).done).length;
+  const m2done = DAYS.filter(d=>d.month===2&&getDayState(d.dayNum).done).length;
+  const m3done = DAYS.filter(d=>d.month===3&&getDayState(d.dayNum).done).length;
+  const m4done = DAYS.filter(d=>d.month===4&&getDayState(d.dayNum).done).length;
+  const m1total = DAYS.filter(d=>d.month===1).length;
+  const m2total = DAYS.filter(d=>d.month===2).length;
+  const m3total = DAYS.filter(d=>d.month===3).length;
+  const m4total = DAYS.filter(d=>d.month===4).length;
+
+  // Streak
+  let streak = 0;
+  let cursor = getLastScheduledDayOnOrBefore(today());
+  while (cursor) {
+    const dayState = getDayState(cursor.dayNum);
+    if (!dayState.done) {
+      if (cursor.dateStr === today()) {
+        cursor = DAYS[cursor.dayNum - 2] || null;
+        continue;
+      }
+      break;
+    }
+    streak++;
+    cursor = DAYS[cursor.dayNum - 2] || null;
+  }
+
+  return { completedDays, daysLeft, totalHours, totalTasks, pct, m1done,m2done,m3done,m4done,m1total,m2total,m3total,m4total, streak };
+}
+
+// ═══════════════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════════════
+function showPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (name==='dashboard') renderDashboard();
+  if (name==='today') renderToday();
+  if (name==='calendar') renderCalendar();
+  if (name==='alldays') renderAllDays();
+  if (name==='report') renderReport();
+}
+
+// ═══════════════════════════════════════════════════════
+//  DASHBOARD
+// ═══════════════════════════════════════════════════════
+function renderDashboard() {
+  const s = getStats();
+  document.getElementById('h-days-done').textContent = s.completedDays;
+  document.getElementById('h-days-left').textContent = s.daysLeft;
+  document.getElementById('h-hrs').textContent = s.totalHours;
+  document.getElementById('h-tasks').textContent = s.totalTasks;
+  document.getElementById('h-streak').textContent = s.streak;
+  document.getElementById('streak-count').textContent = s.streak;
+
+  // Progress ring
+  const circle = document.getElementById('ring-circle');
+  const circumference = 364;
+  circle.style.strokeDashoffset = circumference - (circumference * s.pct / 100);
+  document.getElementById('ring-pct').textContent = s.pct + '%';
+
+  // Month bars
+  document.getElementById('m1-pct').textContent = s.m1done+'/'+s.m1total;
+  document.getElementById('m1-bar').style.width = Math.round(s.m1done/s.m1total*100)+'%';
+  document.getElementById('m2-pct').textContent = s.m2done+'/'+s.m2total;
+  document.getElementById('m2-bar').style.width = Math.round(s.m2done/s.m2total*100)+'%';
+  document.getElementById('m3-pct').textContent = s.m3done+'/'+s.m3total;
+  document.getElementById('m3-bar').style.width = Math.round(s.m3done/s.m3total*100)+'%';
+  document.getElementById('m4-pct').textContent = s.m4done+'/'+s.m4total;
+  document.getElementById('m4-bar').style.width = Math.round(s.m4done/s.m4total*100)+'%';
+
+  // Heatmap
+  renderHeatmap();
+
+  // Skills grid
+  const skills = [
+    {name:'JavaScript',m:1,topics:['ES6+','Async/Await','Event Loop','Closures']},
+    {name:'TypeScript',m:1,topics:['Generics','Utility Types','Discriminated Unions']},
+    {name:'React',m:1,topics:['Hooks','React Router','Error Boundaries','Performance']},
+    {name:'Next.js',m:1,topics:['App Router','SSR/SSG','API Routes']},
+    {name:'FastAPI',m:2,topics:['Pydantic v2','Async','DI','Layered Arch']},
+    {name:'Auth/Security',m:2,topics:['JWT','Refresh Tokens','CSRF','OWASP']},
+    {name:'PostgreSQL',m:2,topics:['SQLAlchemy 2','Alembic','Indexes','EXPLAIN']},
+    {name:'Redis',m:2,topics:['Caching','Pub/Sub','TTL','Invalidation']},
+    {name:'TanStack Query',m:3,topics:['Queries','Mutations','Optimistic UI']},
+    {name:'WebSockets',m:3,topics:['Real-time','Pub/Sub Scale','Reconnect']},
+    {name:'Testing',m:3,topics:['Pytest','React Testing Lib','MSW','Coverage']},
+    {name:'Docker',m:4,topics:['Dockerfile','docker-compose','Multi-stage']},
+    {name:'CI/CD',m:4,topics:['GitHub Actions','Auto-deploy','Sentry']},
+    {name:'AI Integration',m:4,topics:['Groq','Streaming SSE','LangChain']},
+    {name:'System Design',m:4,topics:['Blog System','Chat System','Caching']},
+  ];
+  const grid = document.getElementById('skills-grid');
+  grid.innerHTML = skills.map(sk => {
+    const mDays = DAYS.filter(d=>d.month===sk.m);
+    const mDone = mDays.filter(d=>getDayState(d.dayNum).done).length;
+    const mTotal = mDays.length;
+    const pct = Math.round(mDone/mTotal*100);
+    const col = monthColor(sk.m);
+    return `<div class="card-sm">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:12px;font-weight:700">${sk.name}</span>
+        <span style="font-size:10px;color:${col}">${pct}%</span>
+      </div>
+      <div class="bar-track" style="margin-bottom:8px"><div class="bar-fill" style="background:${col};width:${pct}%"></div></div>
+      <div style="display:flex;flex-wrap:wrap;gap:3px">${sk.topics.map(t=>`<span class="pill" style="border-color:${col}20;color:var(--muted);font-size:9px">${t}</span>`).join('')}</div>
+    </div>`;
+  }).join('');
+
+  // Upcoming
+  const todayDate = fromDateKey(today());
+  const next5 = DAYS
+    .filter(d => d.date >= todayDate && !getDayState(d.dayNum).done)
+    .slice(0, 5);
+  document.getElementById('upcoming-days').innerHTML = next5.map(d=>{
+    const col = monthColor(d.month);
+    return `<div class="day-row" onclick="openDayModal(${d.dayNum})">
+      <div class="day-num-badge" style="background:${col}18;color:${col}">D${d.dayNum}</div>
+      <div class="day-info">
+        <div class="day-title">${d.title}</div>
+        <div class="day-sub">${formatDate(d.date)} · ${d.weekLabel}</div>
+      </div>
+      <span class="day-tag ${monthBadge(d.month)}">M${d.month}</span>
+    </div>`;
+  }).join('') || '<div style="color:var(--muted);font-size:12px;padding:12px">All caught up! 🎉</div>';
+}
+
+function renderHeatmap() {
+  const wrap = document.getElementById('heatmap-wrap');
+  const todayStr = today();
+  const todayDate = fromDateKey(todayStr);
+  let html = '<div class="heatmap">';
+  DAYS.forEach(d => {
+    const s = getDayState(d.dayNum);
+    const isToday = d.dateStr === todayStr;
+    const isFuture = d.date > todayDate;
+    let cls = 'hm-cell';
+    if (isToday) cls += ' today';
+    else if (s.done) cls += ' done';
+    else if (isFuture) cls += ' future';
+    else cls += ' skipped';
+    html += `<div class="${cls}" title="Day ${d.dayNum}: ${d.title} (${d.dateStr})" onclick="openDayModal(${d.dayNum})"></div>`;
+  });
+  html += '</div><div style="margin-top:6px;font-size:10px;color:var(--muted)">Each cell = 1 study day · Click any cell for details</div>';
+  wrap.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════
+//  TODAY PAGE
+// ═══════════════════════════════════════════════════════
+function renderToday() {
+  const todayNum = getTodayDayNum();
+  const wrap = document.getElementById('today-content');
+  if (!todayNum) {
+    const todayDate = fromDateKey(today());
+    wrap.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--muted)">
+      <div style="font-size:48px;margin-bottom:16px">🎉</div>
+      <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--text)">
+        ${todayDate < START_DATE ? 'Roadmap starts May 11, 2026!' : 'Roadmap Complete!'}
+      </div>
+      <div style="margin-top:8px;font-size:12px">See All Days tab to review past content</div>
+    </div>`;
+    return;
+  }
+  const d = DAYS[todayNum-1];
+  const ds = getDayState(d.dayNum);
+  const col = monthColor(d.month);
+
+  wrap.innerHTML = `
+    <div class="today-header" style="border-left-color:${col}">
+      <div class="today-day" style="color:${col}">DAY ${d.dayNum} · MONTH ${d.month} · ${d.weekLabel.toUpperCase()}</div>
+      <div class="today-title">${d.title}</div>
+      <div class="today-week">${formatDate(d.date)} · ${d.theme} · 5 hours</div>
+    </div>
+
+    <!-- Daily Schedule -->
+    <div class="section-title">TODAY'S SCHEDULE</div>
+    ${renderScheduleBlocks(d, col)}
+
+    <!-- Tasks Checklist -->
+    <div class="section-title">TASKS CHECKLIST</div>
+    <div class="card" style="margin-bottom:14px" id="tasks-card">
+      ${d.tasks.map((t,i)=>{
+        const done = ds.tasks[i] || false;
+        return `<div class="check-task" onclick="toggleTask(${d.dayNum},${i})">
+          <div class="check-box ${done ? 'done' : ''}">${done ? '✓' : ''}</div>
+          <span class="check-label ${done ? 'done' : ''}">${t.t}</span>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <!-- Timer -->
+    <div class="section-title">FOCUS TIMER</div>
+    <div class="card" style="margin-bottom:14px;text-align:center">
+      <div class="timer-display" id="timer-disp">${formatTimer(state.timerSeconds)}</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:16px">Hours today: <span id="hours-today" style="color:${col}">${ds.hoursLogged||0}</span>h</div>
+      <div class="timer-btns">
+        <button class="btn btn-primary" onclick="timerStart(${d.dayNum})" id="btn-start">▶ Start</button>
+        <button class="btn btn-outline" onclick="timerPause()" id="btn-pause" style="display:none">⏸ Pause</button>
+        <button class="btn btn-outline" onclick="timerReset(${d.dayNum})" id="btn-reset">↺ Reset</button>
+        <button class="btn btn-outline" onclick="logHour(${d.dayNum},1)">+1 hr</button>
+        <button class="btn btn-outline" onclick="logHour(${d.dayNum},0.5)">+30min</button>
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="section-title">DAILY NOTES</div>
+    <div class="card" style="margin-bottom:14px">
+      <textarea class="notes-area" id="notes-area" placeholder="What did you learn today? Any blockers? Code snippets? Key concepts...">${escapeHtml(ds.notes || '')}</textarea>
+      <button class="save-btn" onclick="saveNotes(${d.dayNum})">💾 Save Notes</button>
+    </div>
+
+    <!-- Mood -->
+    <div class="section-title">HOW ARE YOU FEELING?</div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="mood-row">
+        ${['🔥 On fire','😊 Good','😐 Okay','😓 Struggling','🤯 Overwhelmed'].map(m=>`
+          <button class="mood-btn ${ds.mood===m?'selected':''}" onclick='saveMood(${d.dayNum}, ${escapeInlineString(m)})'>${m}</button>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- Mark Done -->
+    <div style="text-align:center;margin-top:20px">
+      <button class="btn ${ds.done?'btn-outline':'btn-primary'}" style="font-size:14px;padding:12px 32px" onclick="markDone(${d.dayNum})">
+        ${ds.done ? '✓ Day Completed!' : '🎯 Mark Day as Complete'}
+      </button>
+    </div>
+  `;
+  syncTimerControls();
+}
+
+function renderScheduleBlocks(d, col) {
+  const blocks = [
+    {time:'9:00–10:00',icon:'📖',title:'Theory / Reading',dur:'1 hr',open:true,
+      content:`<ul class="topic-list">${d.topics.map((t,i)=>`<li class="${i>=2?'topic-new':''}">${t}</li>`).join('')}</ul>`},
+    {time:'10:00–12:00',icon:'💻',title:'Coding Session',dur:'2 hrs',open:false,
+      content:`<div style="font-size:12px;color:var(--muted);line-height:1.8">
+        <strong style="color:var(--text)">Project:</strong> ${d.project}<br/>
+        <strong style="color:var(--text)">Focus:</strong> Build first, then refactor clean.
+      </div>`},
+    {time:'12:00–12:30',icon:'🐛',title:'Debug / LeetCode',dur:'30 min',open:false,
+      content:`<div style="font-size:12px;color:var(--muted);line-height:1.8">
+        ${d.dayNum>=50?'<strong style="color:var(--text)">LeetCode:</strong> Solve 1 Easy or revisit yesterday\'s problem.<br/>' : ''}
+        <strong style="color:var(--text)">Debug:</strong> Review yesterday's code for bugs or improvements.
+      </div>`},
+    {time:'12:30–1:00',icon:'📝',title:'Notes + GitHub Push',dur:'30 min',open:false,
+      content:`<ul class="topic-list">
+        <li>Write key learnings in notes section below</li>
+        <li>git add . → git commit -m "Day ${d.dayNum}: ${d.title}" → git push</li>
+        <li>Check resources for tomorrow</li>
+      </ul>`},
+    {time:'Resources',icon:'🔗',title:'Study Resources',dur:'',open:false,
+      content:`<ul class="topic-list">${d.resources.map(r=>`<li>${r}</li>`).join('')}</ul>`},
+  ];
+  return blocks.map((b,i)=>`
+    <div class="schedule-block">
+      <div class="sb-header" onclick="toggleBlock(this)">
+        <span class="sb-icon">${b.icon}</span>
+        <span class="sb-time">${b.time}</span>
+        <span class="sb-title">${b.title}</span>
+        <span class="sb-dur" style="color:${col}">${b.dur}</span>
+        <span style="color:var(--muted);margin-left:8px">${b.open?'▾':'▸'}</span>
+      </div>
+      <div class="sb-body ${b.open ? 'open' : ''}">${b.content}</div>
+    </div>
+  `).join('');
+}
+
+function toggleBlock(btn) {
+  const body = btn.nextElementSibling;
+  const arrow = btn.lastElementChild;
+  body.classList.toggle('open');
+  arrow.textContent = body.classList.contains('open') ? '▾' : '▸';
+}
+
+// ═══════════════════════════════════════════════════════
+//  CALENDAR
+// ═══════════════════════════════════════════════════════
+function renderCalendar() {
+  const wrap = document.getElementById('calendar-wrap');
+  const todayStr = today();
+  const todayDate = fromDateKey(todayStr);
+  // Group DAYS by calendar month
+  const monthMap = {};
+  DAYS.forEach(d => {
+    const key = d.date.getFullYear()+'-'+(d.date.getMonth()+1);
+    if (!monthMap[key]) monthMap[key] = [];
+    monthMap[key].push(d);
+  });
+
+  let html = '';
+  Object.entries(monthMap).forEach(([key, days]) => {
+    const firstDay = days[0].date;
+    const monthName = firstDay.toLocaleDateString('en-IN', {month:'long',year:'numeric'});
+    // Find all calendar dates for this month view
+    const year = firstDay.getFullYear();
+    const month = firstDay.getMonth();
+    const firstOfMonth = new Date(year, month, 1);
+    const daysInMonth = new Date(year, month+1, 0).getDate();
+    const startWeekday = firstOfMonth.getDay(); // 0=Sun
+
+    html += `<div style="margin-bottom:28px">
+      <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:12px;color:var(--text)">${monthName}</div>
+      <div class="cal-grid">
+        ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>`<div class="cal-header-cell">${d}</div>`).join('')}
+    `;
+    // Empty cells before month starts
+    for (let i=0;i<startWeekday;i++) html += `<div class="cal-cell empty"></div>`;
+    // Fill days
+    for (let day=1;day<=daysInMonth;day++) {
+      const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      const roadmapDay = DAYS.find(d=>d.dateStr===dateStr);
+      const isToday = dateStr===todayStr;
+      const isFuture = fromDateKey(dateStr) > todayDate;
+      let cls='cal-cell';
+      let dot='';
+      if (!roadmapDay) {
+        cls+=' future-cell';
+        html+=`<div class="${cls}"><div class="cal-date">${day}</div><div style="font-size:9px;color:var(--muted2)">—</div></div>`;
+        continue;
+      }
+      const ds = getDayState(roadmapDay.dayNum);
+      if (isToday) cls+=' today-cell';
+      else if (ds.done) { cls+=' done-cell'; dot=`<div class="cal-dot" style="background:var(--green)"></div>`; }
+      else if (isFuture) cls+=' future-cell';
+      const col = monthColor(roadmapDay.month);
+      html+=`<div class="${cls}" onclick="openDayModal(${roadmapDay.dayNum})">
+        <div class="cal-date">${day}</div>
+        <div class="cal-day-num" style="color:${col}">D${roadmapDay.dayNum}</div>
+        <div class="cal-topic">${roadmapDay.title}</div>
+        ${dot}
+      </div>`;
+    }
+    // Remaining empty cells
+    const endWeekday = new Date(year,month,daysInMonth).getDay();
+    for (let i=endWeekday+1;i<7;i++) html+=`<div class="cal-cell empty"></div>`;
+    html+=`</div></div>`;
+  });
+  wrap.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════
+//  ALL DAYS
+// ═══════════════════════════════════════════════════════
+function renderAllDays(search='', monthFilter='all', statusFilter='all') {
+  const todayStr = today();
+  const todayDate = fromDateKey(todayStr);
+  let days = DAYS;
+  if (monthFilter!=='all') days=days.filter(d=>d.month===parseInt(monthFilter));
+  if (statusFilter==='done') days=days.filter(d=>getDayState(d.dayNum).done);
+  else if (statusFilter==='today') days=days.filter(d=>d.dateStr===todayStr);
+  else if (statusFilter==='upcoming') days=days.filter(d=>d.date>todayDate&&!getDayState(d.dayNum).done);
+  if (search) {
+    const q=search.toLowerCase();
+    days=days.filter(d=>d.title.toLowerCase().includes(q)||d.theme.toLowerCase().includes(q)||d.topics.some(t=>t.toLowerCase().includes(q)));
+  }
+  const list = document.getElementById('all-days-list');
+  list.innerHTML = days.map(d=>{
+    const ds = getDayState(d.dayNum);
+    const isToday = d.dateStr===todayStr;
+    const col = monthColor(d.month);
+    let statusClass = ds.done?'done':'';
+    if (isToday) statusClass='today-row';
+    return `<div class="day-row ${statusClass}" onclick="openDayModal(${d.dayNum})">
+      <div class="day-num-badge" style="background:${col}18;color:${col}">D${d.dayNum}</div>
+      <div class="day-info">
+        <div class="day-title">${d.title} ${isToday?'← TODAY':''}</div>
+        <div class="day-sub">${formatDate(d.date)} · ${d.theme} · ${d.weekLabel}</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
+        ${ds.done?'<span class="tag badge-done">DONE</span>':''}
+        ${isToday?'<span class="tag badge-today">TODAY</span>':''}
+        <span class="tag ${monthBadge(d.month)}">M${d.month}</span>
+      </div>
+    </div>`;
+  }).join('') || '<div style="color:var(--muted);padding:20px;font-size:12px">No days match filter.</div>';
+}
+
+function filterDays(q) {
+  const month = document.getElementById('filter-month').value;
+  const status = document.getElementById('filter-status').value;
+  renderAllDays(q, month, status);
+}
+
+// ═══════════════════════════════════════════════════════
+//  REPORT
+// ═══════════════════════════════════════════════════════
+function renderReport() {
+  const s = getStats();
+  // Velocity
+  const weeksElapsed = Math.max(1, Math.floor(s.completedDays / 5));
+  const velocity = (s.completedDays / weeksElapsed).toFixed(1);
+  document.getElementById('rep-velocity').textContent = velocity;
+  const remaining = TOTAL_DAYS - s.completedDays;
+  const daysToFinish = Math.ceil(remaining / (parseFloat(velocity)||1) * 7);
+  const eta = new Date(); eta.setDate(eta.getDate()+daysToFinish);
+  document.getElementById('rep-eta').textContent = eta.toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
+
+  // Hours chart
+  const hoursPerMonth = [1,2,3,4].map(m=>
+    DAYS.filter(d=>d.month===m).reduce((sum,d)=>sum+(getDayState(d.dayNum).hoursLogged||0),0)
+  );
+  const maxH = Math.max(...hoursPerMonth,1);
+  document.getElementById('hours-chart').innerHTML = ['Month 1','Month 2','Month 3','Month 4'].map((label,i)=>`
+    <div class="chart-bar-h">
+      <span class="chart-bar-label">${label}</span>
+      <div class="chart-bar-track">
+        <div class="chart-bar-fill" style="width:${Math.round(hoursPerMonth[i]/maxH*100)}%;background:${['var(--m1)','var(--m2)','var(--m3)','var(--m4)'][i]}">
+          ${hoursPerMonth[i]}h
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  // Topics covered
+  const done = DAYS.filter(d=>getDayState(d.dayNum).done);
+  const allTopics = [...new Set(done.flatMap(d=>d.topics))];
+  document.getElementById('topics-covered').innerHTML = allTopics.length
+    ? allTopics.map(t=>`<span class="pill" style="border-color:var(--border2);color:var(--muted)">${t.replace(' ⚠️','')}</span>`).join('')
+    : '<span style="color:var(--muted);font-size:12px">No topics completed yet. Start Day 1!</span>';
+
+  // Weekly activity
+  const weekDone = Array(17).fill(0);
+  DAYS.filter(d=>getDayState(d.dayNum).done).forEach(d=>{ if(d.week<=16) weekDone[d.week]++; });
+  const maxW = Math.max(...weekDone,1);
+  document.getElementById('weekly-chart').innerHTML = weekDone.slice(1).map((cnt,i)=>`
+    <div class="chart-bar-h">
+      <span class="chart-bar-label">Week ${i+1}</span>
+      <div class="chart-bar-track">
+        <div class="chart-bar-fill" style="width:${Math.round(cnt/maxW*100)}%;background:var(--accent)">${cnt} days</div>
+      </div>
+    </div>
+  `).join('');
+
+  // Mood chart
+  const moods = {};
+  DAYS.forEach(d=>{ const m=getDayState(d.dayNum).mood; if(m) moods[m]=(moods[m]||0)+1; });
+  document.getElementById('mood-chart').innerHTML = Object.entries(moods).length
+    ? Object.entries(moods).map(([m,cnt])=>`
+        <div class="chart-bar-h">
+          <span class="chart-bar-label" style="width:100px">${m}</span>
+          <div class="chart-bar-track">
+            <div class="chart-bar-fill" style="width:${Math.round(cnt/DAYS.length*100)}%;background:var(--m4)">${cnt}x</div>
+          </div>
+        </div>
+      `).join('')
+    : '<div style="color:var(--muted);font-size:12px">Log your mood daily to see patterns here.</div>';
+}
+
+// ═══════════════════════════════════════════════════════
+//  DAY MODAL
+// ═══════════════════════════════════════════════════════
+function openDayModal(dayNum) {
+  const d = DAYS[dayNum-1];
+  const ds = getDayState(dayNum);
+  const col = monthColor(d.month);
+  const todayStr = today();
+  const isToday = d.dateStr===todayStr;
+
+  document.getElementById('modal-content').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+      <div>
+        <div style="font-size:9px;letter-spacing:3px;color:${col};margin-bottom:4px">DAY ${d.dayNum} · MONTH ${d.month}</div>
+        <div class="modal-title">${d.title}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">${formatDate(d.date)} · ${d.weekLabel}</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="divider"></div>
+    <div class="section-title" style="margin-top:0">TOPICS</div>
+    <ul class="topic-list">${d.topics.map(t=>`<li>${t}</li>`).join('')}</ul>
+    <div class="section-title">PROJECT</div>
+    <div style="font-size:12px;color:var(--muted);background:${col}0d;border:1px solid ${col}20;border-radius:6px;padding:10px 14px">
+      🛠 ${d.project}
+    </div>
+    <div class="section-title">RESOURCES</div>
+    ${d.resources.map(r=>`<div style="font-size:12px;color:var(--muted);padding:4px 0;border-bottom:1px solid var(--border)">🔗 ${r}</div>`).join('')}
+    <div class="section-title">TASKS</div>
+    ${d.tasks.map((t,i)=>{
+      const done=ds.tasks[i]||false;
+      return `<div class="check-task" onclick="toggleTask(${dayNum},${i});event.stopPropagation()">
+        <div class="check-box ${done ? 'done' : ''}">${done ? '✓' : ''}</div>
+        <span class="check-label ${done ? 'done' : ''}">${t.t}</span>
+      </div>`;
+    }).join('')}
+    ${ds.notes?`<div class="section-title">NOTES</div><div style="font-size:12px;color:var(--muted);background:var(--surface2);border-radius:6px;padding:12px;line-height:1.7">${formatNotes(ds.notes)}</div>`:'' }
+    ${isToday?`<div style="text-align:center;margin-top:20px"><button class="btn btn-primary" onclick="closeModal();showPage('today',document.querySelector('.nav-btn:nth-child(2)'))">Go to Today →</button></div>`:''}
+  `;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal(e) {
+  if (e && e.target !== document.getElementById('modal-overlay')) return;
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+// ═══════════════════════════════════════════════════════
+//  INTERACTIONS
+// ═══════════════════════════════════════════════════════
+function toggleTask(dayNum, taskIdx) {
+  const ds = getDayState(dayNum);
+  ds.tasks = ds.tasks || {};
+  ds.tasks[taskIdx] = !ds.tasks[taskIdx];
+  saveDayState(dayNum, ds);
+  // Re-render tasks section if on today page
+  const el = document.getElementById('tasks-card');
+  if (el) {
+    const d = DAYS[dayNum-1];
+    el.innerHTML = d.tasks.map((t,i)=>{
+      const done = ds.tasks[i]||false;
+      return `<div class="check-task" onclick="toggleTask(${dayNum},${i})">
+        <div class="check-box ${done ? 'done' : ''}">${done ? '✓' : ''}</div>
+        <span class="check-label ${done ? 'done' : ''}">${t.t}</span>
+      </div>`;
+    }).join('');
+  }
+  // Re-render modal if open
+  const modal = document.getElementById('modal-overlay');
+  if (modal.classList.contains('open')) openDayModal(dayNum);
+}
+
+function saveNotes(dayNum) {
+  const ds = getDayState(dayNum);
+  ds.notes = document.getElementById('notes-area').value;
+  saveDayState(dayNum, ds);
+  toast('Notes saved! 💾');
+}
+
+function saveMood(dayNum, mood) {
+  const ds = getDayState(dayNum);
+  ds.mood = mood;
+  saveDayState(dayNum, ds);
+  document.querySelectorAll('.mood-btn').forEach(b=>{
+    b.classList.toggle('selected', b.textContent.trim()===mood.trim());
+  });
+  toast('Mood logged!');
+}
+
+function markDone(dayNum) {
+  const ds = getDayState(dayNum);
+  ds.done = !ds.done;
+  saveDayState(dayNum, ds);
+  if (ds.done) toast('🎉 Day '+dayNum+' complete! Keep going!');
+  renderToday();
+  renderDashboard();
+}
+
+function logHour(dayNum, hrs) {
+  const ds = getDayState(dayNum);
+  ds.hoursLogged = Math.min(12, (ds.hoursLogged||0) + hrs);
+  saveDayState(dayNum, ds);
+  const el = document.getElementById('hours-today');
+  if (el) el.textContent = ds.hoursLogged;
+  toast(`+${hrs}h logged!`);
+}
+
+// ── TIMER ──
+function formatTimer(s) {
+  const h = Math.floor(s/3600);
+  const m = Math.floor((s%3600)/60);
+  const sec = s%60;
+  return [h,m,sec].map(x=>String(x).padStart(2,'0')).join(':');
+}
+function syncTimerControls() {
+  const startBtn = document.getElementById('btn-start');
+  const pauseBtn = document.getElementById('btn-pause');
+  if (!startBtn || !pauseBtn) return;
+  startBtn.style.display = state.timerRunning ? 'none' : 'inline-flex';
+  pauseBtn.style.display = state.timerRunning ? 'inline-flex' : 'none';
+}
+function timerStart(dayNum) {
+  if (state.timerRunning) return;
+  state.timerRunning = true;
+  syncTimerControls();
+  state.timerInterval = setInterval(()=>{
+    state.timerSeconds++;
+    const el = document.getElementById('timer-disp');
+    if (el) el.textContent = formatTimer(state.timerSeconds);
+    // Auto-log every 3600s
+    if (state.timerSeconds % 3600 === 0) logHour(dayNum, 1);
+  }, 1000);
+}
+function timerPause() {
+  state.timerRunning = false;
+  clearInterval(state.timerInterval);
+  state.timerInterval = null;
+  syncTimerControls();
+}
+function timerReset(dayNum) {
+  timerPause();
+  state.timerSeconds = 0;
+  const el = document.getElementById('timer-disp');
+  if (el) el.textContent = '00:00:00';
+}
+
+// ═══════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════
+renderDashboard();
+</script>
+</body>
+</html>
